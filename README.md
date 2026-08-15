@@ -9,6 +9,7 @@ visitor's tab.
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
 | [`superset/`](superset/) | `/superset/` | Apache Superset 6.1.0 — Flask app, React frontend and SQLite metadata database in the tab, with SQL Lab and the example dashboards |
+| [`iceberg/`](iceberg/) | `/iceberg/` | Apache Iceberg — PyIceberg writes a real table (metadata, manifests, Parquet) in the tab and DuckDB queries it, snapshots and time travel included |
 
 ## Build the site
 

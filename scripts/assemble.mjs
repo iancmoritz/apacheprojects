@@ -33,7 +33,7 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(ROOT, "dist");
 
 /** Top-level project directories, each of which builds a `dist/` of its own. */
-const PROJECTS = ["airflow", "superset"];
+const PROJECTS = ["airflow", "iceberg", "superset"];
 
 /** Files the project list itself is made of. */
 const SITE_FILES = ["index.html", "projects.js"];
