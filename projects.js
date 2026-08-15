@@ -31,6 +31,16 @@ export const PROJECTS = [
     accent: "#017cee",
   },
   {
+    name: "Apache DataFusion",
+    version: "53.1.0",
+    href: "/datafusion/",
+    blurb:
+      "The Rust query engine itself, compiled to WebAssembly. Query the bundled CSV and Parquet " +
+      "tables or drop in your own file, and read the plan it built.",
+    pieces: ["Rust \u2192 wasm", "Arrow", "Parquet"],
+    accent: "#ff7f0e",
+  },
+  {
     name: "Apache ECharts",
     version: "6.1.0",
     href: "/echarts/",

@@ -8,12 +8,16 @@ visitor's tab.
 | project | route | what it is |
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
+| [`datafusion/`](datafusion/) | `/datafusion/` | Apache DataFusion 53.1 — the Rust query engine compiled to wasm, as a SQL workbench with plans |
 | [`echarts/`](echarts/) | `/echarts/` | Apache ECharts 6.1.0 — a live option editor, a dozen presets, brushing, drill-down, a streaming series and 3D on WebGL |
 | [`iceberg/`](iceberg/) | `/iceberg/` | Apache Iceberg — PyIceberg writes a real table (metadata, manifests, Parquet) in the tab and DuckDB queries it, snapshots and time travel included |
 
 ## Build the site
 
-Requirements: Node `^20.19 || >=22.12`.
+Requirements: Node `^20.19 || >=22.12`, and — for `datafusion/`, which compiles the engine from the
+Rust crate — a Rust toolchain (`rustup`/`cargo`; `rustup target add wasm32-unknown-unknown`, which its
+build script does for you). Its build downloads matching `wasm-bindgen` and `wasm-opt` release
+binaries rather than `cargo install`ing them, and fails with a clear message if `cargo` is missing.
 
 ```bash
 npm install       # nothing to install here; each project installs its own dependencies
