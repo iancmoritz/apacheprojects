@@ -94,10 +94,12 @@ Compression is the host's job: Vercel gzips/brotlis `application/wasm` automatic
 plain file fetched by the worker, never inlined into a JS chunk, so the page is interactive before it
 arrives and the progress bar is real bytes.
 
-Boot on a warm cache, measured in Chrome on the assembled production build: **~2.5 s** from page load
-to results on screen — dominated by compiling 17 MB of wasm, with registering the 120 000-row Parquet
-file taking a few hundred milliseconds. Cold, add however long 4-5 MB takes on the visitor's
-connection. Queries over `trips` then run in single-digit to low tens of milliseconds.
+Boot, measured in Chrome on the assembled production build served from localhost: **~175 ms** from
+page load to the first query's results on screen (177 ms on a fresh profile, 173 ms on reload),
+including compiling the module, starting the session and registering both tables. On a cold disk
+cache the same page measured ~670 ms. Over the network, add however long 4-5 MB takes on the
+visitor's connection — that transfer, not the engine, is the boot time. Queries over the 120 000-row
+`trips` table then run in single-digit to low tens of milliseconds.
 
 ## How the hard parts work
 
