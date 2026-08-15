@@ -8,6 +8,7 @@ visitor's tab.
 | project | route | what it is |
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
+| [`kafka/`](kafka/) | `/kafka/` | Apache Kafka 3.9.1 — a single-node KRaft broker and controller on a JVM in wasm, driven from the page |
 
 ## Build the site
 
