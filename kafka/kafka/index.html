@@ -1,0 +1,314 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kafka in the browser</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        --line: color-mix(in srgb, currentColor 15%, transparent);
+        --panel: color-mix(in srgb, currentColor 4%, transparent);
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: #231f20;
+        color: #fff;
+        flex-wrap: wrap;
+      }
+      header h1 {
+        font-size: 1rem;
+        margin: 0;
+        white-space: nowrap;
+      }
+      header a {
+        color: inherit;
+      }
+      #boot {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        font-variant-numeric: tabular-nums;
+        flex: 1;
+        min-width: 16rem;
+      }
+      #bar {
+        flex: 1;
+        height: 6px;
+        min-width: 6rem;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+      }
+      #bar i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: #fff;
+        transition: width 0.3s ease;
+      }
+      main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: minmax(20rem, 26rem) 1fr;
+        gap: 1rem;
+        padding: 1rem;
+        align-items: start;
+      }
+      @media (max-width: 60rem) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+      section {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.75rem 1rem 1rem;
+        background: var(--panel);
+      }
+      section h2 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 0.6rem;
+        opacity: 0.7;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: end;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.7rem;
+        opacity: 0.75;
+        gap: 0.15rem;
+      }
+      input,
+      button,
+      select {
+        font: inherit;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: transparent;
+        color: inherit;
+      }
+      input {
+        width: 8rem;
+      }
+      input.wide {
+        width: 11rem;
+      }
+      input.narrow {
+        width: 4.5rem;
+      }
+      button {
+        cursor: pointer;
+        background: color-mix(in srgb, currentColor 10%, transparent);
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      button.primary {
+        background: #231f20;
+        color: #fff;
+        border-color: #231f20;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+        font-variant-numeric: tabular-nums;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.25rem 0.5rem 0.25rem 0;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.6;
+      }
+      .empty {
+        font-size: 0.8rem;
+        opacity: 0.6;
+      }
+      pre {
+        margin: 0;
+        max-height: 16rem;
+        overflow: auto;
+        font-size: 0.72rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .lag-behind {
+        color: #b7791f;
+        font-weight: 600;
+      }
+      .internal {
+        opacity: 0.55;
+      }
+      .note {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin: 0.5rem 0 0;
+        line-height: 1.5;
+      }
+      .row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .cluster {
+        font-size: 0.72rem;
+        opacity: 0.7;
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Apache Kafka 3.9.1</h1>
+      <div id="boot">
+        <div id="bar"><i></i></div>
+        <span id="boot-status">idle</span>
+      </div>
+      <a href="/">All projects</a>
+    </header>
+
+    <main>
+      <div class="stack">
+        <section>
+          <h2>Broker</h2>
+          <div class="row">
+            <button id="start" class="primary">Start the broker</button>
+            <button id="reset" disabled>Reset log dir</button>
+          </div>
+          <p class="note" id="broker-note">
+            A single-node KRaft cluster (<code>process.roles=broker,controller</code>) runs in this
+            tab on CheerpJ. Starting it downloads ~32&nbsp;MB of Kafka jars and takes ~30–60&nbsp;s.
+          </p>
+          <p class="cluster" id="cluster"></p>
+        </section>
+
+        <section>
+          <h2>Create topic</h2>
+          <form id="topic-form">
+            <label>name <input name="name" value="demo" required /></label>
+            <label>partitions <input name="partitions" class="narrow" type="number" min="1" max="8" value="2" /></label>
+            <button type="submit" disabled>Create</button>
+          </form>
+        </section>
+
+        <section>
+          <h2>Produce</h2>
+          <form id="produce-form">
+            <label>topic <input name="topic" value="demo" required /></label>
+            <label>key <input name="key" class="narrow" value="k1" /></label>
+            <label>value <input name="value" class="wide" value="hello from the browser" /></label>
+            <button type="submit" disabled>Send</button>
+            <button type="button" id="produce-burst" disabled>Send 10</button>
+          </form>
+        </section>
+
+        <section>
+          <h2>Consume</h2>
+          <form id="consume-form">
+            <label>group <input name="group" value="demo-group" required /></label>
+            <label>topic <input name="topic" value="demo" required /></label>
+            <label>max <input name="max" class="narrow" type="number" min="1" max="100" value="10" /></label>
+            <button type="submit" disabled>Poll</button>
+          </form>
+          <table id="records">
+            <thead>
+              <tr><th>partition</th><th>offset</th><th>key</th><th>value</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p class="empty" id="records-empty">Nothing consumed yet.</p>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section>
+          <h2>Topics &amp; partitions <span class="cluster" id="state-age"></span></h2>
+          <table id="topics">
+            <thead>
+              <tr><th>topic</th><th>partition</th><th>leader</th><th>start</th><th>end</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p class="empty" id="topics-empty">AdminClient has nothing to report until the broker is up.</p>
+          <p class="note">
+            Every number here comes from Kafka's own <code>AdminClient</code>
+            (<code>describeTopics</code>, <code>listOffsets</code>,
+            <code>listConsumerGroupOffsets</code>), refreshed while the broker is up.
+          </p>
+        </section>
+
+        <section>
+          <h2>Consumer groups &amp; lag</h2>
+          <table id="groups">
+            <thead>
+              <tr><th>group</th><th>state</th><th>topic</th><th>partition</th><th>committed</th><th>end</th><th>lag</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p class="empty" id="groups-empty">No consumer groups yet.</p>
+        </section>
+
+        <section>
+          <h2>Broker log</h2>
+          <pre id="log">(Kafka's log4j output appears here once the JVM starts.)</pre>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

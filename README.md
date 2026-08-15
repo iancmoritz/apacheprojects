@@ -10,6 +10,7 @@ visitor's tab.
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
 | [`datafusion/`](datafusion/) | `/datafusion/` | Apache DataFusion 53.1 — the Rust query engine compiled to wasm, as a SQL workbench with plans |
 | [`iceberg/`](iceberg/) | `/iceberg/` | Apache Iceberg — PyIceberg writes a real table (metadata, manifests, Parquet) in the tab and DuckDB queries it, snapshots and time travel included |
+| [`kafka/`](kafka/) | `/kafka/` | Apache Kafka 3.9.1 — a single-node KRaft broker and controller on a JVM in wasm, driven from the page |
 
 ## Build the site
 

@@ -51,6 +51,16 @@ export const PROJECTS = [
     pieces: ["Pyodide", "PyIceberg", "DuckDB"],
     accent: "#1f6feb",
   },
+  {
+    name: "Apache Kafka",
+    version: "3.9.1",
+    href: "/kafka/",
+    blurb:
+      "A single-node KRaft broker and controller on a JVM in wasm. Create a topic, produce and " +
+      "consume records, and watch offsets and consumer-group lag through Kafka's own AdminClient.",
+    pieces: ["CheerpJ", "KRaft", "AdminClient"],
+    accent: "#231f20",
+  },
 ];
 
 const list = document.querySelector("#projects");
