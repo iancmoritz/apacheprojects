@@ -1,0 +1,24 @@
+{
+  "name": "iceberg-wasm",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Apache Iceberg tables written and queried entirely in the browser, on Pyodide",
+  "scripts": {
+    "postinstall": "node scripts/build-runtime.mjs",
+    "assets": "node scripts/build-runtime.mjs",
+    "dev": "npm run assets && vite",
+    "build": "npm run assets && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "probe": "node scripts/probe.mjs"
+  },
+  "dependencies": {
+    "pyodide": "314.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
+  }
+}

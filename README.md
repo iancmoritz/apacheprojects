@@ -8,6 +8,7 @@ visitor's tab.
 | project | route | what it is |
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
+| [`iceberg/`](iceberg/) | `/iceberg/` | Apache Iceberg — PyIceberg writes a real table (metadata, manifests, Parquet) in the tab and DuckDB queries it, snapshots and time travel included |
 
 ## Build the site
 
