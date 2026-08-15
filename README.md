@@ -8,6 +8,7 @@ visitor's tab.
 | project | route | what it is |
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
+| [`superset/`](superset/) | `/superset/` | Apache Superset 6.1.0 — Flask app, React frontend and SQLite metadata database in the tab, with SQL Lab and the example dashboards |
 
 ## Build the site
 
