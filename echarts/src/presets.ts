@@ -304,7 +304,8 @@ export const PRESETS: Preset[] = [
     dataZoom: [{ type: 'inside', start: 60, end: 100 }, { type: 'slider', bottom: 28, height: 26 }],
     series: [
       { name: 'OHLC', type: 'candlestick', data: bars,
-        markLine: { symbol: 'none', data: [{ yAxis: mean.toFixed(2), label: { formatter: 'mean' } }] } },
+        markLine: { symbol: 'none',
+          data: [{ yAxis: mean.toFixed(2), label: { position: 'insideEndTop', formatter: 'mean' } }] } },
       { name: 'MA5', type: 'line', data: ma, smooth: true, showSymbol: false, lineWidth: 1 },
     ],
   };

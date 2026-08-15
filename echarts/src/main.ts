@@ -30,6 +30,7 @@ import { BUNDLE_LABELS, bundlesFor, bundlesForSource, echarts, echartsVersion, i
 import { echartsTheme, exportBackground, type ThemeName } from "./theme";
 
 const RENDER_DEBOUNCE_MS = 350;
+const EDITED_HINT = "Your own option -- it is drawn as you type, and any chunk a series type needs is fetched first.";
 const FRAME_INTERVAL_MS = 2_200;
 
 const gallery = document.querySelector<HTMLDivElement>("#gallery")!;
@@ -124,9 +125,13 @@ function buildChart(): void {
   });
 
   chart.on("brushSelected", (params) => {
-    const areas = params as { batch?: { selected?: { dataIndex: number[] }[] }[] };
-    const batch = areas.batch?.[0]?.selected ?? [];
-    selected = batch.reduce((count, series) => count + (series.dataIndex?.length ?? 0), 0);
+    // ECharts also fires this with no areas when a brush is cleared (and once per draw of an option
+    // that has a brush at all), which is not a selection of zero points.
+    const event = params as { batch?: { areas?: unknown[]; selected?: { dataIndex?: number[] }[] }[] };
+    const batch = event.batch?.[0];
+    selected = batch?.areas?.length
+      ? (batch.selected ?? []).reduce((count, series) => count + (series.dataIndex?.length ?? 0), 0)
+      : null;
     showStats();
   });
 }
@@ -274,7 +279,13 @@ async function exportSvg(): Promise<void> {
   document.body.append(host);
   const offscreen = echarts.init(host, echartsTheme(theme), { renderer: "svg" });
   try {
-    offscreen.setOption(current(), { notMerge: true });
+    // Serialising happens immediately, so the entrance animation would be caught part-drawn (bars
+    // still at zero height, a line clipped short); and an SVG has no canvas behind it to inherit a
+    // background from, so the theme's has to go into the option.
+    offscreen.setOption(
+      { ...current(), animation: false, backgroundColor: exportBackground(theme) },
+      { notMerge: true },
+    );
     const svg = offscreen.renderToSVGString();
     download(URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })), `echarts-${active.id}.svg`);
   } finally {
@@ -326,7 +337,11 @@ function main(): void {
     void exportSvg().catch(fail);
   });
 
-  editor.onChange((source) => scheduleRender(source));
+  editor.onChange((source) => {
+    // The preset's "what to try" no longer describes an option the visitor has rewritten.
+    if (source.trim() !== active.code.trim()) hint.textContent = EDITED_HINT;
+    scheduleRender(source);
+  });
   document.documentElement.dataset.theme = theme;
   document.querySelector<HTMLButtonElement>("#theme")!.textContent =
     theme === "dark" ? "Light theme" : "Dark theme";
