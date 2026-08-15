@@ -1,0 +1,23 @@
+{
+  "name": "superset-wasm",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Apache Superset running entirely in the browser on Pyodide and SQLite",
+  "scripts": {
+    "postinstall": "node scripts/copy-pyodide.mjs",
+    "assets": "node scripts/copy-pyodide.mjs && node scripts/build-wheels.mjs",
+    "dev": "npm run assets && vite",
+    "build": "npm run assets && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pyodide": "0.27.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
+  }
+}

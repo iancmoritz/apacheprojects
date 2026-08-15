@@ -41,6 +41,16 @@ export const PROJECTS = [
     accent: "#ff7f0e",
   },
   {
+    name: "Apache Superset",
+    version: "6.1.0",
+    href: "/superset/",
+    blurb:
+      "Superset's Flask app, its React frontend and a SQLite metadata database, all in your tab. " +
+      "Run SQL against the bundled example data in SQL Lab and open a real dashboard.",
+    pieces: ["Pyodide", "SQLite", "Superset UI"],
+    accent: "#20a7c9",
+  },
+  {
     name: "Apache Iceberg",
     version: "PyIceberg 0.11.1",
     href: "/iceberg/",
