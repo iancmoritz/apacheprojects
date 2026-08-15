@@ -1,0 +1,314 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ECharts in the browser</title>
+    <style>
+      :root {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        --accent: #c1232b;
+        --page: #f6f8fb;
+        --ink: #10202e;
+        --muted: #5b6b7a;
+        --card: #fff;
+        --edge: #dde5ee;
+        --code: #f8fafc;
+        --token: #8a4fbd;
+        --token-string: #067d5b;
+        --token-number: #b5561a;
+        --token-comment: #8fa0b0;
+      }
+      :root[data-theme="dark"] {
+        --page: #0e1620;
+        --ink: #eef4fa;
+        --muted: #9fb0c0;
+        --card: #16202c;
+        --edge: #263442;
+        --code: #101a25;
+        --token: #c9a1ff;
+        --token-string: #6bd6a8;
+        --token-number: #f0a86a;
+        --token-comment: #6a7b8b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--page);
+        color: var(--ink);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: var(--accent);
+        color: #fff;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1rem;
+        white-space: nowrap;
+      }
+      header a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.9;
+        white-space: nowrap;
+      }
+      header a:hover {
+        text-decoration: underline;
+      }
+      header .grow {
+        flex: 1;
+      }
+      header .tag {
+        font-size: 0.78rem;
+        border: 1px solid rgb(255 255 255 / 45%);
+        border-radius: 999px;
+        padding: 0.1rem 0.5rem;
+        white-space: nowrap;
+      }
+      button {
+        font: inherit;
+        font-size: 0.85rem;
+        color: var(--ink);
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 0.45rem;
+        padding: 0.28rem 0.6rem;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      header button {
+        color: #fff;
+        background: rgb(255 255 255 / 12%);
+        border-color: rgb(255 255 255 / 45%);
+      }
+      header button:hover:not(:disabled) {
+        color: #fff;
+        background: rgb(255 255 255 / 25%);
+        border-color: #fff;
+      }
+      main {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(20rem, 34%) 1fr;
+      }
+      @media (width < 60rem) {
+        main {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+        }
+      }
+      .pane {
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .pane + .pane {
+        border-left: 1px solid var(--edge);
+      }
+      .gallery {
+        padding: 0.75rem 0.9rem 0.4rem;
+        border-bottom: 1px solid var(--edge);
+        overflow: auto;
+        max-height: 42%;
+      }
+      .gallery h2,
+      .frames h2 {
+        margin: 0.5rem 0 0.4rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .gallery h2:first-child {
+        margin-top: 0;
+      }
+      .gallery .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+      .gallery button[aria-pressed="true"] {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .gallery button .chunk {
+        font-size: 0.7rem;
+        opacity: 0.75;
+        margin-left: 0.3rem;
+      }
+      .editor-head {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        padding: 0.6rem 0.9rem 0.35rem;
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+      .editor-head code {
+        color: var(--ink);
+      }
+      #editor {
+        flex: 1;
+        min-height: 8rem;
+        overflow: auto;
+        margin: 0 0.9rem 0.6rem;
+        padding: 0.7rem 0.8rem;
+        background: var(--code);
+        border: 1px solid var(--edge);
+        border-radius: 0.5rem;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 0.76rem;
+        line-height: 1.55;
+        tab-size: 2;
+        white-space: pre;
+        outline: none;
+        resize: none;
+      }
+      #editor:focus-within {
+        border-color: var(--accent);
+      }
+      #error {
+        margin: 0 0.9rem 0.7rem;
+        padding: 0.45rem 0.6rem;
+        border-radius: 0.4rem;
+        background: rgb(193 35 43 / 12%);
+        border: 1px solid rgb(193 35 43 / 45%);
+        color: var(--ink);
+        font-family: ui-monospace, monospace;
+        font-size: 0.74rem;
+        white-space: pre-wrap;
+      }
+      #error:empty {
+        display: none;
+      }
+      .token.keyword,
+      .token.boolean,
+      .token.null {
+        color: var(--token);
+      }
+      .token.string,
+      .token.template-string,
+      .token.regex {
+        color: var(--token-string);
+      }
+      .token.number {
+        color: var(--token-number);
+      }
+      .token.comment {
+        color: var(--token-comment);
+      }
+      .token.punctuation,
+      .token.operator {
+        color: var(--muted);
+      }
+      .token.function {
+        color: var(--accent);
+      }
+      .chart-head {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.6rem 0.9rem;
+        border-bottom: 1px solid var(--edge);
+      }
+      .chart-head .grow {
+        flex: 1;
+      }
+      #chart {
+        flex: 1;
+        min-height: 14rem;
+      }
+      .foot {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        padding: 0.55rem 0.9rem 0.7rem;
+        border-top: 1px solid var(--edge);
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+      .foot .hint {
+        flex: 1;
+        min-width: 14rem;
+      }
+      .foot .stats {
+        font-family: ui-monospace, monospace;
+        white-space: pre-line;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/">&larr; Projects</a>
+      <h1>Apache ECharts &mdash; playground</h1>
+      <span class="tag" id="version">loading&hellip;</span>
+      <span class="grow"></span>
+      <button id="theme" type="button">Dark theme</button>
+      <button id="png" type="button">Export PNG</button>
+      <button id="svg" type="button">Export SVG</button>
+    </header>
+    <main>
+      <section class="pane">
+        <div class="gallery" id="gallery"></div>
+        <div class="editor-head">
+          <span>option (JavaScript, evaluated as you type)</span>
+          <span class="grow"></span>
+          <span>in scope: <code>random(seed)</code></span>
+        </div>
+        <div id="editor" spellcheck="false"></div>
+        <pre id="error"></pre>
+      </section>
+      <section class="pane">
+        <div class="chart-head" id="controls">
+          <span class="grow"></span>
+        </div>
+        <div id="chart"></div>
+        <div class="foot">
+          <span class="hint" id="hint"></span>
+          <span class="stats" id="stats"></span>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

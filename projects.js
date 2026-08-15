@@ -41,6 +41,16 @@ export const PROJECTS = [
     accent: "#ff7f0e",
   },
   {
+    name: "Apache ECharts",
+    version: "6.1.0",
+    href: "/echarts/",
+    blurb:
+      "A playground: edit the chart option and it redraws as you type, with a dozen presets, " +
+      "brushing, drill-down, a live series and 3D on WebGL when you ask for it.",
+    pieces: ["ECharts", "echarts-gl", "live editor"],
+    accent: "#c1232b",
+  },
+  {
     name: "Apache Iceberg",
     version: "PyIceberg 0.11.1",
     href: "/iceberg/",
