@@ -8,9 +8,13 @@ Airflow itself is **not vendored**: `apache-airflow-core==3.3.1` and its depende
 installed from PyPI wheels into Pyodide, and this repo only holds the glue that makes those wheels
 work without processes, threads, sockets or a real Postgres (`python/airflow_wasm/`).
 
+Two pages are served from one origin: the project list at `/` (`index.html`, `src/home.ts`) and this
+app at `/airflow/` (`airflow/index.html`, `src/main.ts`). The runtime the service worker answers is
+mounted at `/_airflow/` so it does not collide with the `/airflow/` document the host serves.
+
 ```text
-page (index.html, src/main.ts)          service worker (public/sw.js)
-  boots the runtime worker                intercepts /airflow/*
+page (airflow/index.html, src/main.ts)  service worker (public/sw.js)
+  boots the runtime worker                intercepts /_airflow/*
   ticks the scheduler every 2s            hands each request to the page
   hosts the real Airflow UI in an iframe            |
                      |                              |
@@ -37,7 +41,8 @@ npm install     # also copies the Pyodide runtime into public/pyodide
 npm run dev     # first run resolves and downloads ~110 Airflow wheels (several minutes)
 ```
 
-Then open <http://localhost:5173/>.
+Then open <http://localhost:5173/> for the project list, or <http://localhost:5173/airflow/> for this
+app directly.
 
 The header reports each boot step; the first cold boot in the tab takes ~60-120s (Pyodide, 110
 wheels, PGlite, `airflow db migrate`). When it says `Airflow 3.3.1 is up`, the iframe below is the

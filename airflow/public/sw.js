@@ -17,11 +17,13 @@
  * under the License.
  */
 
-// Airflow's UI is a stock single-page app that fetches /airflow/api/v2/... over HTTP; it has no idea
-// there is no server.  This worker answers every request under /airflow/ from the Pyodide runtime
-// instead of the network: it forwards them over a MessagePort to the page, which owns the runtime.
+// Airflow's UI is a stock single-page app that fetches /_airflow/api/v2/... over HTTP; it has no
+// idea there is no server.  This worker answers every request under /_airflow/ from the Pyodide
+// runtime instead of the network: it forwards them over a MessagePort to the page, which owns the
+// runtime.  The prefix is deliberately not /airflow/ -- that is the page hosting all of this, and
+// the static host has to keep serving it.
 
-const PREFIX = "/airflow";
+const PREFIX = "/_airflow";
 const TIMEOUT_MS = 120_000;
 
 let port = null;

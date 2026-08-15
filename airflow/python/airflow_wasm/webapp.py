@@ -29,8 +29,8 @@ def boot(instance: Any, *, base_url: str, dags: Any = None) -> dict[str, Any]:
     """Configure Airflow against ``instance`` (a PGlite database), migrate it, and load Dag files."""
     from airflow_wasm import bootstrap
 
-    # ``base_url`` is where the UI is mounted in the tab; Airflow turns its path into the app's
-    # ``root_path``, which is what makes the SPA ask for ``/airflow/api/v2/...``.
+    # ``base_url`` is where the runtime is mounted in the tab; Airflow turns its path into the app's
+    # ``root_path``, which is what makes the SPA ask for ``/_airflow/api/v2/...``.
     bootstrap.configure(instance, env={"AIRFLOW__API__BASE_URL": base_url})
     bootstrap.migrate()
 

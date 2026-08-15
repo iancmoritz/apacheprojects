@@ -17,19 +17,27 @@
  * under the License.
  */
 
-import { defineConfig } from "vite";
+// The list the home page renders.  A new project is one entry plus its page under that `href`.
 
-export default defineConfig({
-  build: {
-    target: "es2022",
-    sourcemap: true,
-    // The project list at / and the Airflow app at /airflow/ are two pages of one origin, because
-    // the service worker the app installs is only allowed to intercept its own origin.
-    rollupOptions: {
-      input: { home: "index.html", airflow: "airflow/index.html" },
-    },
+export type Project = {
+  name: string;
+  version: string;
+  href: string;
+  blurb: string;
+  /** What actually runs in the tab, shown as small tags on the card. */
+  pieces: string[];
+  accent: string;
+};
+
+export const PROJECTS: Project[] = [
+  {
+    name: "Apache Airflow",
+    version: "3.3.1",
+    href: "/airflow/",
+    blurb:
+      "The API server, scheduler, Dag processor, worker and the Postgres metadata database, " +
+      "all WebAssembly in your tab. Trigger a Dag and it really runs here.",
+    pieces: ["Pyodide", "PGlite", "Airflow UI"],
+    accent: "#017cee",
   },
-  worker: { format: "es" },
-  // PGlite ships its wasm as an optional dependency graph that Vite's pre-bundler mangles.
-  optimizeDeps: { exclude: ["@electric-sql/pglite"] },
-});
+];

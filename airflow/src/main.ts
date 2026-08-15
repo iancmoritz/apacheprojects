@@ -23,7 +23,9 @@
 
 import type { HttpResult, Unidentified, WorkerRequest, WorkerResponse } from "./protocol";
 
-const BASE_PATH = "/airflow/";
+// Where the runtime is mounted, not where this page lives: the service worker answers everything
+// under it, so it must not collide with a path the static host serves (this page is /airflow/).
+const BASE_PATH = "/_airflow/";
 const TICK_INTERVAL_MS = 2_000;
 
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
