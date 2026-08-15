@@ -1,0 +1,3 @@
+node_modules/
+# The assembled site (scripts/assemble.mjs); each project's own dist/ is ignored where it lives.
+dist/

@@ -17,9 +17,22 @@
  * under the License.
  */
 
-import { PROJECTS } from "./projects";
+// One entry per top-level project directory.  `href` is the route scripts/assemble.mjs mounts that
+// project's build under, so a new project is a new directory plus an entry here.
+export const PROJECTS = [
+  {
+    name: "Apache Airflow",
+    version: "3.3.1",
+    href: "/airflow/",
+    blurb:
+      "The API server, scheduler, Dag processor, worker and the Postgres metadata database, " +
+      "all WebAssembly in your tab. Trigger a Dag and it really runs here.",
+    pieces: ["Pyodide", "PGlite", "Airflow UI"],
+    accent: "#017cee",
+  },
+];
 
-const list = document.querySelector<HTMLUListElement>("#projects")!;
+const list = document.querySelector("#projects");
 
 for (const project of PROJECTS) {
   const item = document.createElement("li");
