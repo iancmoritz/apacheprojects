@@ -31,6 +31,27 @@ export const PROJECTS = [
     accent: "#017cee",
   },
   {
+    name: "Apache DataFusion",
+    version: "53.1.0",
+    href: "/datafusion/",
+    blurb:
+      "The Rust query engine itself, compiled to WebAssembly. Query the bundled CSV and Parquet " +
+      "tables or drop in your own file, and read the plan it built.",
+    pieces: ["Rust \u2192 wasm", "Arrow", "Parquet"],
+    accent: "#ff7f0e",
+  },
+  {
+    name: "Apache Iceberg",
+    version: "PyIceberg 0.11.1",
+    href: "/iceberg/",
+    blurb:
+      "A real Iceberg table written into your tab's filesystem: metadata JSON, manifests and " +
+      "Parquet you can open file by file. Append, merge, evolve the schema, then query an older " +
+      "snapshot with DuckDB.",
+    pieces: ["Pyodide", "PyIceberg", "DuckDB"],
+    accent: "#1f6feb",
+  },
+  {
     name: "Apache Kafka",
     version: "3.9.1",
     href: "/kafka/",
