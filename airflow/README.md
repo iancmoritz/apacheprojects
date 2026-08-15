@@ -28,11 +28,11 @@ page (index.html, src/main.ts)          service worker (public/sw.js)
 
 ## Run it yourself
 
-Requirements: Node 20+ and a Chromium/Firefox/Safari with service worker support.
+Requirements: Node `^20.19 || >=22.12` and a Chromium/Firefox/Safari with service worker support.
 
 ```bash
-git clone https://github.com/COG-GTM/airflow-wasm.git
-cd airflow-wasm
+git clone https://github.com/iancmoritz/apacheprojects.git
+cd apacheprojects/airflow
 npm install     # also copies the Pyodide runtime into public/pyodide
 npm run dev     # first run resolves and downloads ~110 Airflow wheels (several minutes)
 ```
@@ -53,6 +53,38 @@ npm run preview   # http://localhost:4173/
 ```
 
 `dist/` is the whole application, so any static host can serve it.
+
+## Deploy to Vercel
+
+The app is a purely static bundle, so a Vercel deployment is just "build this directory and serve
+`dist/`". `vercel.json` in this directory already pins the build command, the output directory and
+the headers that matter (`sw.js` must never be cached; the wheels and the interpreter are immutable).
+
+The only setting that is not in the file, because Vercel does not read it from there, is the **root
+directory**: this app lives in `airflow/` of a larger repo.
+
+From the dashboard:
+
+1. **Add New → Project**, import this repository.
+2. Set **Root Directory** to `airflow`.
+3. Leave the framework preset (Vite), build command (`npm run build`) and output directory (`dist`)
+   as detected — they come from `vercel.json`.
+4. **Deploy.** The build runs `npm install` (copies Pyodide into `public/pyodide`) and `npm run build`
+   (downloads the ~110 Airflow wheels into `public/wheels`, typechecks, then bundles), so the first
+   build takes a few minutes and needs network access to PyPI and the Pyodide CDN. Nothing is
+   downloaded at runtime: the deployment serves the interpreter and every wheel from its own origin.
+
+Or from the CLI, in this directory:
+
+```bash
+npm i -g vercel
+vercel        # preview deployment; answer "airflow" if it asks for the root directory
+vercel --prod
+```
+
+No environment variables, no serverless functions, no build-time secrets: Airflow runs in the
+visitor's tab, and Vercel only hands over static files. Note that the deployment is ~60 MB of wasm
+and wheels, and that service workers require HTTPS — which every `*.vercel.app` domain already is.
 
 Other scripts:
 
