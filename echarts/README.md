@@ -97,8 +97,11 @@ Other scripts:
   `echarts.registerMap('world', ...)`.
 - **SVG export from a canvas page.** The page draws on canvas, and ECharts can only serialise what an
   SVG-painter instance drew, so the SVG button loads the SVG renderer chunk, mounts an offscreen
-  instance of the same size with the same option, calls `renderToSVGString()` and disposes it. PNG is
-  `getDataURL()` at `pixelRatio: 2` on the live instance, over the theme's background.
+  instance of the same size with the same option, calls `renderToSVGString()` and disposes it. That
+  option is drawn with `animation: false` -- serialising happens immediately, so an animated option
+  would otherwise be caught part-drawn, bars still at zero height -- and with the theme's
+  `backgroundColor` baked in, because an SVG has no canvas behind it to inherit one from. PNG is
+  `getDataURL()` at `pixelRatio: 2` on the live instance, over the same background.
 - **Small ECharts manners the page has to observe.** `resize` and `setOption` must not be called
   inside an ECharts pass, so the `ResizeObserver` defers by 60 ms; and a brush in the option is not
   armed until a cursor is taken, so `draw()` dispatches `takeGlobalCursor` and a visitor can drag over
