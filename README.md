@@ -8,6 +8,7 @@ visitor's tab.
 | project | route | what it is |
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
+| [`echarts/`](echarts/) | `/echarts/` | Apache ECharts 6.1.0 — a live option editor, a dozen presets, brushing, drill-down, a streaming series and 3D on WebGL |
 
 ## Build the site
 

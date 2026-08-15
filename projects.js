@@ -30,6 +30,16 @@ export const PROJECTS = [
     pieces: ["Pyodide", "PGlite", "Airflow UI"],
     accent: "#017cee",
   },
+  {
+    name: "Apache ECharts",
+    version: "6.1.0",
+    href: "/echarts/",
+    blurb:
+      "A playground: edit the chart option and it redraws as you type, with a dozen presets, " +
+      "brushing, drill-down, a live series and 3D on WebGL when you ask for it.",
+    pieces: ["ECharts", "echarts-gl", "live editor"],
+    accent: "#c1232b",
+  },
 ];
 
 const list = document.querySelector("#projects");
