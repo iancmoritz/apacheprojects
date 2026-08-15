@@ -1,0 +1,22 @@
+{
+  "name": "datafusion-wasm",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Apache DataFusion compiled to WebAssembly, running SQL entirely in the browser",
+  "scripts": {
+    "assets": "node scripts/build-wasm.mjs && node scripts/build-data.mjs",
+    "dev": "npm run assets && vite",
+    "build": "npm run assets && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "apache-arrow": "21.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
+  }
+}
