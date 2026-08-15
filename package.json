@@ -1,0 +1,14 @@
+{
+  "name": "apacheprojects",
+  "private": true,
+  "type": "module",
+  "description": "Apache projects, each built into its own route of one static site.",
+  "scripts": {
+    "build": "npm --prefix airflow install && npm --prefix airflow run build && node scripts/assemble.mjs",
+    "dev": "npm --prefix airflow run dev",
+    "preview": "npm --prefix airflow exec -- vite preview . --outDir dist --port 4173"
+  },
+  "engines": {
+    "node": "^20.19 || >=22.12"
+  }
+}

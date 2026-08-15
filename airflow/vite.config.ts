@@ -17,17 +17,42 @@
  * under the License.
  */
 
-import { defineConfig } from "vite";
+import { readFileSync } from "node:fs";
+import { defineConfig, type Plugin } from "vite";
+
+// In production the project list at / is a static file the repo root owns and
+// ../scripts/assemble.mjs copies next to this build; in `npm run dev` there is no assemble step, so
+// serve it from here.  Both pages have to be one origin: the service worker this app installs can
+// only intercept its own.
+function rootProjectList(): Plugin {
+  const files: Record<string, [string, string]> = {
+    "/": ["../index.html", "text/html"],
+    "/index.html": ["../index.html", "text/html"],
+    "/projects.js": ["../projects.js", "text/javascript"],
+  };
+
+  return {
+    name: "root-project-list",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const entry = files[(req.url ?? "").split("?")[0]];
+        if (!entry) return next();
+        const [file, type] = entry;
+        res.setHeader("Content-Type", type);
+        res.end(readFileSync(new URL(file, import.meta.url)));
+      });
+    },
+  };
+}
 
 export default defineConfig({
+  plugins: [rootProjectList()],
   build: {
     target: "es2022",
     sourcemap: true,
-    // The project list at / and the Airflow app at /airflow/ are two pages of one origin, because
-    // the service worker the app installs is only allowed to intercept its own origin.
-    rollupOptions: {
-      input: { home: "index.html", airflow: "airflow/index.html" },
-    },
+    // The page lives at /airflow/ so that the dev server and the assembled site have identical URLs.
+    rollupOptions: { input: { airflow: "airflow/index.html" } },
   },
   worker: { format: "es" },
   // PGlite ships its wasm as an optional dependency graph that Vite's pre-bundler mangles.

@@ -8,9 +8,10 @@ Airflow itself is **not vendored**: `apache-airflow-core==3.3.1` and its depende
 installed from PyPI wheels into Pyodide, and this repo only holds the glue that makes those wheels
 work without processes, threads, sockets or a real Postgres (`python/airflow_wasm/`).
 
-Two pages are served from one origin: the project list at `/` (`index.html`, `src/home.ts`) and this
-app at `/airflow/` (`airflow/index.html`, `src/main.ts`). The runtime the service worker answers is
-mounted at `/_airflow/` so it does not collide with the `/airflow/` document the host serves.
+This directory builds the `/airflow/` route of the site the repository root assembles (the project
+list at `/` is the root's; the dev server here serves it too). The page is `airflow/index.html` and
+the runtime the service worker answers is mounted at `/_airflow/`, so it does not collide with the
+`/airflow/` document the host serves.
 
 ```text
 page (airflow/index.html, src/main.ts)  service worker (public/sw.js)
@@ -54,42 +55,12 @@ Static bundle instead of the dev server:
 
 ```bash
 npm run build     # asset generation + tsc --noEmit + vite build into dist/
-npm run preview   # http://localhost:4173/
 ```
 
-`dist/` is the whole application, so any static host can serve it.
-
-## Deploy to Vercel
-
-The app is a purely static bundle, so a Vercel deployment is just "build this directory and serve
-`dist/`". `vercel.json` in this directory already pins the build command, the output directory and
-the headers that matter (`sw.js` must never be cached; the wheels and the interpreter are immutable).
-
-The only setting that is not in the file, because Vercel does not read it from there, is the **root
-directory**: this app lives in `airflow/` of a larger repo.
-
-From the dashboard:
-
-1. **Add New → Project**, import this repository.
-2. Set **Root Directory** to `airflow`.
-3. Leave the framework preset (Vite), build command (`npm run build`) and output directory (`dist`)
-   as detected — they come from `vercel.json`.
-4. **Deploy.** The build runs `npm install` (copies Pyodide into `public/pyodide`) and `npm run build`
-   (downloads the ~110 Airflow wheels into `public/wheels`, typechecks, then bundles), so the first
-   build takes a few minutes and needs network access to PyPI and the Pyodide CDN. Nothing is
-   downloaded at runtime: the deployment serves the interpreter and every wheel from its own origin.
-
-Or from the CLI, in this directory:
-
-```bash
-npm i -g vercel
-vercel        # preview deployment; answer "airflow" if it asks for the root directory
-vercel --prod
-```
-
-No environment variables, no serverless functions, no build-time secrets: Airflow runs in the
-visitor's tab, and Vercel only hands over static files. Note that the deployment is ~60 MB of wasm
-and wheels, and that service workers require HTTPS — which every `*.vercel.app` domain already is.
+`dist/` is the whole application (its page at `dist/airflow/index.html`, everything else at the
+origin root, because the service worker has to be served from `/`), so any static host can serve it.
+Deployment is driven from the repository root — `../vercel.json` and
+[the root README](../README.md#deploy-to-vercel) — which merges this `dist/` into the site.
 
 Other scripts:
 
