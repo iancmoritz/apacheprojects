@@ -1,0 +1,353 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iceberg in the browser</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        --accent: #1f6feb;
+        --line: color-mix(in srgb, currentColor 18%, transparent);
+        --panel: color-mix(in srgb, currentColor 4%, transparent);
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: var(--accent);
+        color: #fff;
+        flex-wrap: wrap;
+      }
+      header h1 {
+        font-size: 1rem;
+        margin: 0;
+        white-space: nowrap;
+      }
+      header a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.9;
+      }
+      header a:hover {
+        text-decoration: underline;
+      }
+      header .grow {
+        flex: 1;
+      }
+      button,
+      select,
+      input,
+      textarea {
+        font: inherit;
+      }
+      button {
+        border: 1px solid var(--line);
+        border-radius: 0.4rem;
+        background: var(--panel);
+        color: inherit;
+        padding: 0.3rem 0.6rem;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        border-color: var(--accent);
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: minmax(19rem, 22rem) minmax(0, 1fr) minmax(20rem, 26rem);
+        gap: 0.75rem;
+        padding: 0.75rem;
+        align-items: start;
+      }
+      @media (max-width: 1100px) {
+        main {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      section.panel {
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.75rem 0.75rem;
+        margin-bottom: 0.75rem;
+        background: var(--panel);
+      }
+      section.panel > h2 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        opacity: 0.7;
+        margin: 0 0 0.5rem;
+      }
+      .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .steps button {
+        text-align: left;
+      }
+      .hint {
+        font-size: 0.75rem;
+        opacity: 0.7;
+      }
+      pre,
+      code,
+      table.grid,
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.75rem;
+      }
+      pre {
+        margin: 0.4rem 0 0;
+        white-space: pre-wrap;
+        overflow: auto;
+        max-height: 22rem;
+      }
+      #log {
+        max-height: 8rem;
+        overflow: auto;
+      }
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 4.5rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8rem;
+        border: 1px solid var(--line);
+        border-radius: 0.4rem;
+        background: transparent;
+        color: inherit;
+        padding: 0.4rem;
+      }
+      input[type="text"] {
+        border: 1px solid var(--line);
+        border-radius: 0.4rem;
+        background: transparent;
+        color: inherit;
+        padding: 0.3rem 0.4rem;
+        flex: 1;
+        min-width: 8rem;
+      }
+      .row {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 0.4rem;
+      }
+      table.grid {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+      table.grid th,
+      table.grid td {
+        border: 1px solid var(--line);
+        padding: 0.15rem 0.4rem;
+        text-align: left;
+        white-space: nowrap;
+      }
+      table.grid th {
+        background: color-mix(in srgb, currentColor 8%, transparent);
+      }
+      .scroll {
+        overflow: auto;
+        max-height: 20rem;
+      }
+      ul.tree,
+      ul.snapshots {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.72rem;
+      }
+      ul.tree li {
+        white-space: nowrap;
+      }
+      ul.tree button {
+        border: 0;
+        background: none;
+        padding: 0.05rem 0.15rem;
+        text-align: left;
+        width: 100%;
+      }
+      ul.tree button:hover {
+        text-decoration: underline;
+      }
+      .kind {
+        display: inline-block;
+        min-width: 6.2rem;
+        opacity: 0.75;
+      }
+      .kind.metadata {
+        color: #b26b00;
+      }
+      .kind.manifest-list {
+        color: #7a3fbf;
+      }
+      .kind.manifest {
+        color: #2c7a3f;
+      }
+      .kind.data {
+        color: #1f6feb;
+      }
+      ul.snapshots li {
+        border-left: 2px solid var(--line);
+        padding: 0.2rem 0 0.2rem 0.6rem;
+      }
+      ul.snapshots li.current {
+        border-left-color: var(--accent);
+      }
+      .error {
+        color: #d13c3c;
+        white-space: pre-wrap;
+        font-size: 0.75rem;
+      }
+      .badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0 0.45rem;
+        font-size: 0.7rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/">&larr; Projects</a>
+      <h1>Apache Iceberg &mdash; WebAssembly</h1>
+      <span id="status">starting&hellip;</span>
+      <span class="grow"></span>
+      <span id="boot-time" class="badge"></span>
+      <button id="reset" type="button" disabled>Reset warehouse</button>
+    </header>
+
+    <main>
+      <div>
+        <section class="panel">
+          <h2>What is running here</h2>
+          <p class="hint" style="margin: 0">
+            <strong>No server.</strong> CPython (Pyodide), <strong>PyIceberg</strong> and
+            <strong>DuckDB</strong> run in this tab. PyIceberg writes a real Iceberg table &mdash;
+            metadata JSON, manifest lists, manifests and Parquet &mdash; into the interpreter's
+            filesystem, with a SQLite catalog; DuckDB answers the SQL.
+          </p>
+          <pre id="log"></pre>
+        </section>
+
+        <section class="panel">
+          <h2>Table steps</h2>
+          <div class="steps">
+            <button id="create" type="button" disabled>Create table <code>nyc.trips</code></button>
+            <button id="append" type="button" disabled>Append a batch (240 rows)</button>
+            <button id="upsert" type="button" disabled>Upsert: +$25 on 5 trips (MERGE)</button>
+            <button id="delete" type="button" disabled>Delete where <code>fare &lt; 12</code></button>
+            <button id="evolve-schema" type="button" disabled>
+              Evolve schema: add <code>tip</code>, rename <code>city</code>
+            </button>
+            <button id="evolve-spec" type="button" disabled>
+              Evolve partitioning: identity(<code>pickup_city</code>)
+            </button>
+            <button id="expire" type="button" disabled>Expire the oldest snapshot</button>
+          </div>
+          <div id="step-result" class="hint" style="margin-top: 0.5rem"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Table</h2>
+          <div id="summary" class="hint">no table yet</div>
+          <div id="schema"></div>
+          <div id="specs"></div>
+        </section>
+      </div>
+
+      <div>
+        <section class="panel">
+          <h2>SQL (DuckDB over a PyIceberg scan)</h2>
+          <textarea id="sql">
+select city, count(*) as trips, round(avg(fare), 2) as avg_fare
+from trips
+group by 1
+order by 1</textarea>
+          <div id="schema-hint" class="hint"></div>
+          <div class="row">
+            <label class="hint" for="as-of">as of</label>
+            <select id="as-of">
+              <option value="">current snapshot</option>
+            </select>
+            <button id="run" type="button" disabled>Run</button>
+            <span id="query-meta" class="hint"></span>
+          </div>
+          <div id="query-error" class="error"></div>
+          <div id="query-result" class="scroll"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Scan planning &amp; file pruning</h2>
+          <div class="row">
+            <label class="hint" for="filter">row filter</label>
+            <input id="filter" type="text" value="pickup_ts &gt;= '2024-01-07T00:00:00'" />
+            <button id="plan" type="button" disabled>Plan</button>
+            <span id="plan-meta" class="hint"></span>
+          </div>
+          <div id="plan-error" class="error"></div>
+          <div id="plan-result" class="scroll"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Snapshot log</h2>
+          <ul id="snapshots" class="snapshots"></ul>
+        </section>
+      </div>
+
+      <div>
+        <section class="panel">
+          <h2>Warehouse on disk</h2>
+          <div id="tree-meta" class="hint"></div>
+          <div class="scroll" style="max-height: 26rem">
+            <ul id="tree" class="tree"></ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>File inspector</h2>
+          <div id="preview-meta" class="hint">pick a file on the left</div>
+          <div id="preview"></div>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

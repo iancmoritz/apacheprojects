@@ -1,0 +1,66 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+[package]
+name = "datafusion-workbench"
+description = "wasm-bindgen bindings around Apache DataFusion, for the browser"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+publish = { workspace = true }
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+arrow = { workspace = true }
+parquet = { workspace = true }
+# Nothing here may reach a C library: wasm32-unknown-unknown has no libc, so a single `*-sys` crate
+# in the tree turns the build into a clang cross-compile the host (Vercel) cannot do.  That rules
+# out three of DataFusion's default features and pins the version:
+#
+#   * `compression` is liblzma, bzip2 and zstd;
+#   * `parquet` makes DataFusion depend on the `parquet` crate with *its* default features, which
+#     include zstd -- so Parquet is read by our own default-features-off `parquet` dependency below
+#     (see register_parquet) instead of by DataFusion's Parquet datasource;
+#   * `recursive_protection` wants a real stack guard.
+#
+# 53.1 rather than the newest release for the same reason: from 54.x DataFusion asks arrow-ipc for
+# its `zstd` feature, which no combination of features on this side can turn back off.
+datafusion = { version = "53.1", default-features = false, features = [
+    "sql",
+    "nested_expressions",
+    "crypto_expressions",
+    "datetime_expressions",
+    "encoding_expressions",
+    "math_expressions",
+    "regex_expressions",
+    "string_expressions",
+    "unicode_expressions",
+] }
+tokio = { version = "1", default-features = false, features = ["rt", "sync"] }
+bytes = "1"
+js-sys = "0.3"
+wasm-bindgen = "0.2.104"
+console_error_panic_hook = "0.1.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Features the browser needs from crates DataFusion depends on indirectly.
+chrono = { version = "0.4", features = ["wasmbind"] }
+getrandom = { version = "0.3", features = ["wasm_js"] }
+uuid = { version = "1", features = ["js"] }
