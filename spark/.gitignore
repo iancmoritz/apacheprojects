@@ -1,0 +1,5 @@
+node_modules/
+dist/
+# The Spark distribution and the patched classpath, built by scripts/build-runtime.mjs (~140 MB).
+.cache/
+public/_spark/

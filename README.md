@@ -8,6 +8,7 @@ visitor's tab.
 | project | route | what it is |
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
+| [`spark/`](spark/) | `/spark/` | Apache Spark 3.5.9 — a real driver on `local[*]`, Catalyst and its shuffle, on a JVM in WebAssembly |
 
 ## Build the site
 

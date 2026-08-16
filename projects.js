@@ -30,6 +30,16 @@ export const PROJECTS = [
     pieces: ["Pyodide", "PGlite", "Airflow UI"],
     accent: "#017cee",
   },
+  {
+    name: "Apache Spark",
+    version: "3.5.9",
+    href: "/spark/",
+    blurb:
+      "A real Spark driver on local[*] — Catalyst, the DAG scheduler and its shuffle — on a JVM " +
+      "compiled to WebAssembly. Write SQL and Spark answers it in your tab.",
+    pieces: ["CheerpJ", "Scala 2.12", "Spark SQL"],
+    accent: "#e25a1c",
+  },
 ];
 
 const list = document.querySelector("#projects");

@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Apache projects, each built into its own route of one static site.",
   "scripts": {
-    "build": "npm --prefix airflow install && npm --prefix airflow run build && node scripts/assemble.mjs",
+    "build": "npm --prefix airflow install && npm --prefix airflow run build && npm --prefix spark install && npm --prefix spark run build && node scripts/assemble.mjs",
     "dev": "npm --prefix airflow run dev",
     "preview": "npm --prefix airflow exec -- vite preview . --outDir dist --port 4173"
   },
