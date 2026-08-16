@@ -1,0 +1,5 @@
+node_modules/
+dist/
+# Hadoop's published jars and the patched classpath, built by scripts/build-runtime.mjs (~85 MB).
+.cache/
+public/_hadoop/

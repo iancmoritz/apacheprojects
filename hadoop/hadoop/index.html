@@ -1,0 +1,446 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hadoop in the browser</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        --hadoop: #f9a825;
+        --ink: #1b1b1b;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: var(--hadoop);
+        color: var(--ink);
+      }
+      header h1 {
+        font-size: 1rem;
+        margin: 0;
+        white-space: nowrap;
+      }
+      header a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.9;
+        white-space: nowrap;
+      }
+      header a:hover {
+        text-decoration: underline;
+      }
+      header .grow {
+        flex: 1;
+      }
+      header .facts {
+        font-size: 0.8rem;
+        text-align: right;
+        white-space: nowrap;
+      }
+      main {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        flex: 1;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+      #boot ol {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+        font-size: 0.9rem;
+      }
+      #boot li[data-state="done"]::marker {
+        content: "\2713  ";
+      }
+      #boot li[data-state="pending"] {
+        opacity: 0.5;
+      }
+      #boot li[data-state="failed"] {
+        color: #c00;
+      }
+      #boot li .ms {
+        opacity: 0.6;
+        font-size: 0.85em;
+      }
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-size: 0.78rem;
+        line-height: 1.35;
+      }
+      #log,
+      #console {
+        max-height: 24vh;
+        overflow: auto;
+        border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+        border-radius: 4px;
+        padding: 0.5rem;
+      }
+      #console {
+        margin-top: 0.5rem;
+        color: color-mix(in srgb, currentColor 65%, transparent);
+      }
+      #console:empty {
+        display: none;
+      }
+      #work[hidden],
+      .panel[hidden] {
+        display: none;
+      }
+      .columns {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        gap: 1rem;
+        align-items: start;
+      }
+      @media (max-width: 60rem) {
+        .columns {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      section.card {
+        border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+        border-radius: 6px;
+        padding: 0.75rem;
+        min-width: 0;
+      }
+      section.card > h2 {
+        font-size: 0.9rem;
+        margin: 0 0 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.7;
+      }
+      #shell-out {
+        max-height: 34vh;
+        overflow: auto;
+        font-family: ui-monospace, monospace;
+      }
+      #shell-out .cmd {
+        color: var(--hadoop);
+      }
+      #shell-out .err {
+        color: #c00;
+      }
+      .prompt {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-top: 0.5rem;
+      }
+      .prompt span {
+        font-family: ui-monospace, monospace;
+        opacity: 0.6;
+      }
+      .prompt input {
+        flex: 1;
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.4rem;
+        border-radius: 4px;
+        border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+        background: transparent;
+        color: inherit;
+        min-width: 0;
+      }
+      button.go {
+        background: var(--hadoop);
+        color: var(--ink);
+        border: 0;
+        border-radius: 4px;
+        padding: 0.4rem 1rem;
+        cursor: pointer;
+      }
+      button.go:disabled {
+        opacity: 0.5;
+        cursor: progress;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 0.82rem;
+        width: 100%;
+      }
+      th,
+      td {
+        border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        padding: 0.2rem 0.45rem;
+        text-align: left;
+        white-space: nowrap;
+      }
+      th {
+        font-weight: 600;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .facts-table td:first-child {
+        opacity: 0.7;
+      }
+      .bars {
+        display: grid;
+        grid-template-columns: 5rem 1fr 4rem;
+        gap: 0.35rem 0.5rem;
+        align-items: center;
+        font-size: 0.85rem;
+        margin: 0.5rem 0;
+      }
+      .bar {
+        height: 0.7rem;
+        border-radius: 4px;
+        background: color-mix(in srgb, currentColor 15%, transparent);
+        overflow: hidden;
+      }
+      .bar > div {
+        height: 100%;
+        background: var(--hadoop);
+        width: 0;
+        transition: width 0.2s linear;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.25rem;
+        border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .tabs button {
+        border: 0;
+        background: none;
+        color: inherit;
+        padding: 0.35rem 0.7rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+      }
+      .tabs button[aria-selected="true"] {
+        border-bottom-color: var(--hadoop);
+        font-weight: 600;
+      }
+      .panel {
+        overflow: auto;
+        max-height: 46vh;
+      }
+      .note {
+        font-size: 0.85rem;
+        opacity: 0.8;
+      }
+      .error {
+        color: #c00;
+      }
+      code {
+        font-size: 0.85em;
+      }
+      details summary {
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/">&larr; Projects</a>
+      <h1>Apache Hadoop &mdash; WebAssembly</h1>
+      <span id="status">starting&hellip;</span>
+      <span class="grow"></span>
+      <span class="facts" id="facts"></span>
+    </header>
+    <main>
+      <section id="boot">
+        <strong>Nothing here runs on a server.</strong> Apache Hadoop 3.3.6 is running in this tab on a
+        JVM compiled to WebAssembly: in HDFS mode a real NameNode with an fsimage and an edit log and a
+        real DataNode with block files, and in local mode Hadoop&rsquo;s own MapReduce &mdash;
+        <code>LocalJobRunner</code>, real splits and real <code>Counters</code> &mdash; over
+        Hadoop&rsquo;s <code>LocalFileSystem</code>. Every path, block, split and counter on this page
+        comes back from Hadoop&rsquo;s APIs. The two do not yet work together: see
+        <a href="#limits">what a tab cannot do</a>.
+        <ol id="steps"></ol>
+        <pre id="log"></pre>
+        <!-- CheerpJ redirects the JVM's stdout and stderr into the element with this id. -->
+        <pre id="console" aria-label="JVM stdout"></pre>
+      </section>
+      <div id="work" hidden>
+        <div class="columns">
+          <section class="card">
+            <h2>Hadoop commands</h2>
+            <div class="row" style="margin-bottom: 0.5rem">
+              <label class="note" for="mode">Filesystem:</label>
+              <select id="mode" class="note">
+                <option value="local" selected>Local &mdash; Hadoop LocalFileSystem, MapReduce works</option>
+                <option value="hdfs">HDFS &mdash; real NameNode + DataNode (MiniDFSCluster)</option>
+              </select>
+              <span class="note" id="mode-note"
+                >Hadoop&rsquo;s <code>LocalFileSystem</code> over CheerpJ&rsquo;s filesystem: no
+                daemons, and <code>wordcount</code> finishes.</span
+              >
+            </div>
+            <div class="note">
+              <code>ls</code>, <code>mkdir</code>, <code>put</code>, <code>cat</code>,
+              <code>rm</code>, <code>mv</code>, <code>cp</code>, <code>du</code>, <code>df</code>,
+              <code>blocks</code>, <code>touchz</code>, <code>help</code> &mdash; each one a call into Hadoop&rsquo;s
+              <code>FileSystem</code> &mdash; and
+              <code>wordcount&nbsp;&lt;in&gt;&nbsp;&lt;out&gt;</code> for the MapReduce job. One per
+              line; they all run in a single visit to the JVM, because
+              <a href="#limits">CheerpJ cannot be called again while the cluster is up</a>.
+            </div>
+            <textarea
+              id="script"
+              rows="9"
+              spellcheck="false"
+              style="width: 100%; box-sizing: border-box; font-family: ui-monospace, monospace"
+              aria-label="HDFS commands"
+            ></textarea>
+            <div class="row" style="margin-top: 0.5rem">
+              <label class="note" for="write-path">Write this file first:</label>
+              <input id="write-path" class="note" style="flex: 1" aria-label="Path to write" />
+            </div>
+            <textarea
+              id="write-text"
+              rows="3"
+              spellcheck="false"
+              style="width: 100%; box-sizing: border-box; font-family: ui-monospace, monospace"
+              aria-label="File contents"
+            ></textarea>
+            <div class="row" style="margin-top: 0.5rem">
+              <button class="go" id="run" type="button">Start Hadoop and run these</button>
+              <span class="note" id="run-note"></span>
+            </div>
+            <pre id="shell-out" style="margin-top: 0.5rem"></pre>
+          </section>
+          <section class="card">
+            <h2>Cluster</h2>
+            <table class="facts-table" id="cluster"></table>
+            <details style="margin-top: 0.5rem">
+              <summary id="storage-summary">NameNode and DataNode storage</summary>
+              <table id="storage"></table>
+            </details>
+          </section>
+        </div>
+        <section class="card" style="margin-top: 1rem">
+          <h2>MapReduce &mdash; WordCount</h2>
+          <div class="note">
+            Add a <code>wordcount &lt;input&gt; &lt;output&gt;</code> line to the commands above and
+            everything here &mdash; progress, counters, splits, task reports, output &mdash; is read
+            out of Hadoop&rsquo;s own <code>Job</code> handle while the job runs.
+            <span id="job-note"></span>
+          </div>
+          <div class="bars" id="job-bars" hidden>
+            <span>Setup</span>
+            <div class="bar"><div id="bar-setup"></div></div>
+            <span class="num" id="pct-setup">0%</span>
+            <span>Map</span>
+            <div class="bar"><div id="bar-map"></div></div>
+            <span class="num" id="pct-map">0%</span>
+            <span>Reduce</span>
+            <div class="bar"><div id="bar-reduce"></div></div>
+            <span class="num" id="pct-reduce">0%</span>
+          </div>
+          <div class="tabs" role="tablist">
+            <button id="tab-counters" type="button" role="tab" aria-selected="true">Counters</button>
+            <button id="tab-splits" type="button" role="tab" aria-selected="false">
+              Splits &amp; tasks
+            </button>
+            <button id="tab-output" type="button" role="tab" aria-selected="false">Output</button>
+          </div>
+          <div class="panel" id="panel-counters"></div>
+          <div class="panel" id="panel-splits" hidden></div>
+          <div class="panel" id="panel-output" hidden></div>
+        </section>
+        <section class="card" id="limits" style="margin-top: 1rem">
+          <h2>What a tab cannot do</h2>
+          <ul class="note">
+            <li>
+              <strong>One run per page load.</strong> With <code>MiniDFSCluster</code> running,
+              CheerpJ never returns from a second call into Java &mdash; not even from a method that
+              only returns a string &mdash; and <code>MiniDFSCluster.shutdown</code>, which would end
+              the first call cleanly, hangs finalizing the edit log. So a run is a single call that
+              starts the NameNode and DataNode and plays every command against them, and running again
+              means a reload: a new JVM, a newly formatted namespace, and the boot paid again.
+            </li>
+            <li>
+              <strong>No listening sockets.</strong> Hadoop&rsquo;s RPC, the DataNode&rsquo;s data
+              transfer protocol and Jetty all get an in-process TCP stack (a
+              <code>SelectorProvider</code> in <code>java/&hellip;/net/</code>), so the NameNode and
+              DataNode really do talk to each other over sockets &mdash; but nothing outside the tab
+              can reach them, so the NameNode web UI is unreachable.
+            </li>
+            <li>
+              <strong>No native code and no subprocesses.</strong> There is no
+              <code>libhadoop.so</code>, so checksums, <code>NativeIO</code> and the native codecs are
+              off; <code>du</code>, <code>df</code> and <code>ls -ld</code> are replaced by Java
+              implementations, and HDFS permission checks are disabled because the tab has no OS user.
+            </li>
+            <li>
+              <strong>MapReduce is Hadoop&rsquo;s <code>LocalJobRunner</code>.</strong> Real
+              <code>Mapper</code>, <code>Reducer</code>, <code>InputFormat</code>, splits, task reports
+              and <code>Counters</code>, but there is no YARN in the tab, so tasks are threads rather
+              than containers.
+            </li>
+            <li>
+              <strong>An interrupt that CheerpJ does not deliver.</strong> A thread waiting in an
+              untimed <code>Condition.await</code> is not woken by <code>Thread.interrupt()</code>
+              here, and that is how <code>MapTask</code> ends its spill thread &mdash; so no map task
+              could ever finish, and the job stopped after &ldquo;Finished spill 0&rdquo;. The build
+              rewrites Hadoop&rsquo;s <code>interrupt()</code> call sites to add an
+              <code>unpark</code>, which is what makes the WordCount above complete.
+            </li>
+            <li>
+              <strong>MapReduce and HDFS do not run in the same tab.</strong> The job finishes over
+              Hadoop&rsquo;s <code>LocalFileSystem</code> (local mode) every time; submit it with the
+              MiniDFSCluster up and roughly five seconds later every thread in the JVM stops &mdash;
+              the DataNode&rsquo;s and NameNode&rsquo;s own select loops included, which the virtual
+              network&rsquo;s trace shows going quiet together &mdash; and the tab never comes back.
+              The HDFS commands above all complete in that same run, right up to the submit, and every
+              wait in the virtual network is bounded, so it is CheerpJ&rsquo;s scheduler rather than a
+              lock Hadoop is holding. Not the interrupt bug above either: it happens identically with
+              that shim off (<code>?unpark=0</code>), with the shim never compiled in, and with the
+              daemons&rsquo; pools cut to one handler each.
+            </li>
+          </ul>
+        </section>
+      </div>
+    </main>
+    <script src="https://cjrtnc.leaningtech.com/4.2/loader.js"></script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
