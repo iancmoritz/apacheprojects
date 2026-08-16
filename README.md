@@ -10,6 +10,7 @@ visitor's tab.
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
 | [`datafusion/`](datafusion/) | `/datafusion/` | Apache DataFusion 53.1 — the Rust query engine compiled to wasm, as a SQL workbench with plans |
 | [`iceberg/`](iceberg/) | `/iceberg/` | Apache Iceberg — PyIceberg writes a real table (metadata, manifests, Parquet) in the tab and DuckDB queries it, snapshots and time travel included |
+| [`spark/`](spark/) | `/spark/` | Apache Spark 3.5.9 — a real driver on `local[*]`, Catalyst and its shuffle, on a JVM in WebAssembly |
 
 ## Build the site
 
@@ -17,6 +18,8 @@ Requirements: Node `^20.19 || >=22.12`, and — for `datafusion/`, which compile
 Rust crate — a Rust toolchain (`rustup`/`cargo`; `rustup target add wasm32-unknown-unknown`, which its
 build script does for you). Its build downloads matching `wasm-bindgen` and `wasm-opt` release
 binaries rather than `cargo install`ing them, and fails with a clear message if `cargo` is missing.
+`spark/`, which patches Spark's own jars, downloads the Spark distribution (~400 MB) on its first
+build, and a JDK too if the machine has no `javac` on `PATH`.
 
 ```bash
 npm install       # nothing to install here; each project installs its own dependencies

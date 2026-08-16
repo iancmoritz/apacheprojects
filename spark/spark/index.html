@@ -1,0 +1,247 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spark in the browser</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        --spark: #e25a1c;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: var(--spark);
+        color: #fff;
+      }
+      header h1 {
+        font-size: 1rem;
+        margin: 0;
+        white-space: nowrap;
+      }
+      header a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.9;
+        white-space: nowrap;
+      }
+      header a:hover {
+        text-decoration: underline;
+      }
+      header .grow {
+        flex: 1;
+      }
+      header .facts {
+        font-size: 0.8rem;
+        opacity: 0.95;
+        text-align: right;
+        white-space: nowrap;
+      }
+      main {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        flex: 1;
+      }
+      button,
+      textarea,
+      select {
+        font: inherit;
+      }
+      #boot ol {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+        font-size: 0.9rem;
+      }
+      #boot li[data-state="done"]::marker {
+        content: "\2713  ";
+      }
+      #boot li[data-state="pending"] {
+        opacity: 0.5;
+      }
+      #boot li[data-state="failed"] {
+        color: #c00;
+      }
+      #boot li .ms {
+        opacity: 0.6;
+        font-size: 0.85em;
+      }
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-size: 0.78rem;
+        line-height: 1.35;
+      }
+      #log,
+      #console {
+        max-height: 30vh;
+        overflow: auto;
+        border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+        border-radius: 4px;
+        padding: 0.5rem;
+      }
+      #console {
+        margin-top: 0.5rem;
+        color: color-mix(in srgb, currentColor 65%, transparent);
+      }
+      #console:empty {
+        display: none;
+      }
+      #query[hidden] {
+        display: none;
+      }
+      #sql {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 5.5rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      #run {
+        background: var(--spark);
+        color: #fff;
+        border: 0;
+        border-radius: 4px;
+        padding: 0.4rem 1rem;
+        cursor: pointer;
+      }
+      #run:disabled {
+        opacity: 0.5;
+        cursor: progress;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.25rem;
+        border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+      }
+      .tabs button {
+        border: 0;
+        background: none;
+        color: inherit;
+        padding: 0.4rem 0.75rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+      }
+      .tabs button[aria-selected="true"] {
+        border-bottom-color: var(--spark);
+        font-weight: 600;
+      }
+      .panel[hidden] {
+        display: none;
+      }
+      .panel {
+        overflow: auto;
+        max-height: 55vh;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      th,
+      td {
+        border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        padding: 0.25rem 0.5rem;
+        text-align: left;
+        white-space: nowrap;
+      }
+      th small {
+        font-weight: 400;
+        opacity: 0.6;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .note {
+        font-size: 0.85rem;
+        opacity: 0.8;
+      }
+      .error {
+        color: #c00;
+      }
+      code {
+        font-size: 0.85em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/">&larr; Projects</a>
+      <h1>Apache Spark &mdash; WebAssembly</h1>
+      <span id="status">starting&hellip;</span>
+      <span class="grow"></span>
+      <span class="facts" id="facts"></span>
+    </header>
+    <main>
+      <section id="boot">
+        <strong>Nothing here runs on a server.</strong> A real Spark 3.5.9 driver &mdash; Catalyst,
+        the DAG scheduler, the block manager and its shuffle &mdash; is running in this tab on a JVM
+        compiled to WebAssembly. The dataset is one row per class in Spark&rsquo;s own jars, so the
+        queries below are queries about the Spark that is answering them.
+        <ol id="steps"></ol>
+        <pre id="log"></pre>
+        <!-- CheerpJ redirects the JVM's stdout and stderr into the element with this id. -->
+        <pre id="console" aria-label="JVM stdout"></pre>
+      </section>
+      <section id="query" hidden>
+        <div class="row">
+          <label for="samples">Sample queries</label>
+          <select id="samples"></select>
+          <span class="note" id="schema"></span>
+        </div>
+        <textarea id="sql" spellcheck="false" aria-label="Spark SQL"></textarea>
+        <div class="row">
+          <button id="run" type="button">Run</button>
+          <span class="note" id="result-note"></span>
+        </div>
+        <div class="tabs" role="tablist">
+          <button id="tab-rows" type="button" role="tab" aria-selected="true">Results</button>
+          <button id="tab-plan" type="button" role="tab" aria-selected="false">Physical plan</button>
+          <button id="tab-stages" type="button" role="tab" aria-selected="false">
+            Stages &amp; tasks
+          </button>
+        </div>
+        <div class="panel" id="panel-rows"></div>
+        <div class="panel" id="panel-plan" hidden><pre id="plan"></pre></div>
+        <div class="panel" id="panel-stages" hidden></div>
+      </section>
+    </main>
+    <script src="https://cjrtnc.leaningtech.com/4.2/loader.js"></script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
