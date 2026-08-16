@@ -30,6 +30,7 @@ import type { HttpResult, Unidentified, WorkerRequest, WorkerResponse } from "./
 // under it, so it must not collide with a path the static host serves (this page is /airflow/).
 const BASE_PATH = "/_airflow/";
 const TICK_INTERVAL_MS = 2_000;
+const CLAIM_TIMEOUT_MS = 3_000;
 
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 const pending = new Map<number, { resolve: (value: unknown) => void; reject: (error: Error) => void }>();
@@ -101,6 +102,22 @@ async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
     registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
   }
   await navigator.serviceWorker.ready;
+  // The first visit to this origin loads the page uncontrolled: sw.js claims its clients when it
+  // activates, but until that lands a request for /_airflow/ goes to the network and the iframe
+  // shows the site's own index.html instead of Airflow.  Wait to be claimed; if the claim never
+  // arrives, reload -- a page loaded while a worker is already active is controlled from the start.
+  if (!navigator.serviceWorker.controller) {
+    const claimed = await new Promise<boolean>((resolve) => {
+      navigator.serviceWorker.addEventListener("controllerchange", () => resolve(true), {
+        once: true,
+      });
+      window.setTimeout(() => resolve(false), CLAIM_TIMEOUT_MS);
+    });
+    if (!claimed) {
+      location.reload();
+      await new Promise(() => undefined);
+    }
+  }
   navigator.serviceWorker.addEventListener("message", (event) => {
     if (event.data?.type === "need-port" && navigator.serviceWorker.controller) {
       connectServiceWorker(navigator.serviceWorker.controller);
