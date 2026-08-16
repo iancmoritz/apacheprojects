@@ -1,0 +1,19 @@
+{
+  "name": "flink-wasm",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Apache Flink running entirely in the browser on a WebAssembly JVM (CheerpJ)",
+  "scripts": {
+    "assets": "node scripts/build-runtime.mjs",
+    "dev": "npm run assets && vite",
+    "build": "npm run assets && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
+  }
+}
