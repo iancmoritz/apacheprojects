@@ -111,14 +111,14 @@ Other scripts:
 
 ## Measured
 
-On this machine (Chrome 141, Linux, dev server over HTTP, fresh profile):
+On this machine (Chrome 141, Linux, over HTTP, fresh profile):
 
 | | |
 | --- | --- |
-| boot to a running job | **15.6 s** (JVM 0.2 s, class loading 2.7 s, `MiniCluster.start()` 12.7 s, job submission 2.1 s) |
+| boot to a running job | **23 s** on the assembled build, 33 s on the dev server (JVM 0.2 s, class loading ~3 s, then `MiniCluster.start()` and job submission) |
 | first window rows after typing | one window interval (5 s by default) after the words are sent |
-| generator, 30 events/s | 1 300 events, 142 window rows, 102 late records and 4 checkpoints in ~45 s |
-| checkpoint | ~5 kB of state, under a second |
+| generator, 30 events/s with 50% out of order | 52 637 events, 20 142 late records on the side output, watermark lag 1.2 s |
+| checkpoint | ~4 kB of state, under a second |
 | downloaded to boot, run the job and open the dashboard | **126 MB** |
 | classpath on disk | 6 jars, 81 MB (5 upstream + `flinkwasm.jar`) |
 
@@ -187,11 +187,23 @@ Everything in this list was a hard failure before it was a workaround.
 - **No SQL.** The table planner, CEP, the connectors and the Scala API are not on the classpath; this
   is the DataStream API only. `flink-table-planner-loader` alone is 40 MB and loads its own
   classloader hierarchy, which is a project of its own under CheerpJ.
-- **The dashboard is read-only, and two of its views are not there.** Submitting and cancelling jobs
-  are disabled (the page owns the job), the flame graph needs thread sampling CheerpJ does not offer,
-  and Monaco — 11 MB of the dashboard, loaded only by its log and exception viewers — is dropped from
-  the jar, so those two views fail to load. Everything else, including the job graph and the
-  checkpoint and watermark views, is the real dashboard against the real REST API.
+- **Four of the dashboard's views do not work.** What does: Overview, the running job with its graph,
+  Subtasks, its checkpoints and its configuration, the TaskManager list and its metrics and memory
+  model, and the JobManager's configuration. What does not:
+  - *TaskManager Logs* and *Stdout* answer `HTTP 500`. Nothing writes a log *file* here — log4j goes
+    to the JVM's stdout, which the page shows in its Event log tab — and Flink's log handlers serve a
+    file or fail.
+  - *Job Exceptions* renders its heading and nothing else, because Monaco (11 MB of the dashboard,
+    dropped from the jar) is what draws the body.
+  - *Job Watermarks* and *JobManager Metrics* are empty (`No Data`, and dashes): `jobmanager/metrics`
+    returns `[]`, so the REST metric fetcher is getting nothing out of Flink's metric query service.
+    That service runs in a second, local-only Pekko actor system, and the fetcher reaches it the way
+    it would across a cluster, which is the part of Flink's RPC that has no remoting here — likely,
+    but not proven. The page's own watermark, lag and checkpoint metrics come from the
+    `ExecutionGraph` instead and are live.
+
+  Submitting and cancelling from the dashboard are switched off (the page owns the job), and the flame
+  graph needs thread sampling CheerpJ does not offer.
 - **The dashboard is only alive while the page is.** The service worker relays through the page that
   owns the JVM, so `/flink/dashboard/` opened in a tab of its own answers `502` with that explanation.
 - **Not persistent.** Reloading the tab starts a new cluster and a new job from scratch; the previous
