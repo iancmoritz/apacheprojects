@@ -28,6 +28,7 @@ export const PROJECTS = [
       "The API server, scheduler, Dag processor, worker and the Postgres metadata database, " +
       "all WebAssembly in your tab. Trigger a Dag and it really runs here.",
     pieces: ["Pyodide", "PGlite", "Airflow UI"],
+    id: "airflow",
     accent: "#017cee",
   },
   {
@@ -38,6 +39,7 @@ export const PROJECTS = [
       "The Rust query engine itself, compiled to WebAssembly. Query the bundled CSV and Parquet " +
       "tables or drop in your own file, and read the plan it built.",
     pieces: ["Rust \u2192 wasm", "Arrow", "Parquet"],
+    id: "datafusion",
     accent: "#ff7f0e",
   },
   {
@@ -49,6 +51,7 @@ export const PROJECTS = [
       "Parquet you can open file by file. Append, merge, evolve the schema, then query an older " +
       "snapshot with DuckDB.",
     pieces: ["Pyodide", "PyIceberg", "DuckDB"],
+    id: "iceberg",
     accent: "#1f6feb",
   },
   {
@@ -59,24 +62,28 @@ export const PROJECTS = [
       "A real Spark driver on local[*] — Catalyst, the DAG scheduler and its shuffle — on a JVM " +
       "compiled to WebAssembly. Write SQL and Spark answers it in your tab.",
     pieces: ["CheerpJ", "Scala 2.12", "Spark SQL"],
+    id: "spark",
     accent: "#e25a1c",
   },
 ];
 
 const list = document.querySelector("#projects");
+const rail = document.querySelector("#project-links");
 
 for (const project of PROJECTS) {
   const item = document.createElement("li");
   item.className = "card";
-  item.style.setProperty("--accent", project.accent);
+  // A project's own colour is its mark on the card; the rest of the card is the site's.
+  item.style.setProperty("--brand", project.accent);
 
   const link = document.createElement("a");
   link.href = project.href;
 
   const title = document.createElement("h2");
-  title.textContent = project.name;
+  title.className = "card__title";
+  title.append(short(project.name));
   const version = document.createElement("span");
-  version.className = "version";
+  version.className = "card__version";
   version.textContent = project.version;
   title.append(version);
 
@@ -84,18 +91,31 @@ for (const project of PROJECTS) {
   blurb.textContent = project.blurb;
 
   const pieces = document.createElement("ul");
-  pieces.className = "pieces";
+  pieces.className = "chips";
   for (const piece of project.pieces) {
     const tag = document.createElement("li");
+    tag.className = "chip";
     tag.textContent = piece;
     pieces.append(tag);
   }
 
   const open = document.createElement("span");
-  open.className = "open";
+  open.className = "card__open";
   open.textContent = "Open in this tab →";
 
   link.append(title, blurb, pieces, open);
   item.append(link);
   list.append(item);
+
+  const railItem = document.createElement("li");
+  const railLink = document.createElement("a");
+  railLink.href = project.href;
+  railLink.textContent = short(project.name);
+  railItem.append(railLink);
+  rail.append(railItem);
+}
+
+/** "Apache Airflow" -> "Airflow": the page says Apache once, in the heading. */
+function short(name) {
+  return name.replace(/^Apache /, "");
 }

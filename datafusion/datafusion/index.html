@@ -17,309 +17,23 @@
  specific language governing permissions and limitations
  under the License.
 -->
-<html lang="en">
+<html lang="en" data-project="datafusion">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>DataFusion in the browser</title>
-    <style>
-      :root {
-        color-scheme: light dark;
-        font-family: ui-sans-serif, system-ui, sans-serif;
-        --accent: #6153cc;
-        --line: color-mix(in srgb, currentColor 18%, transparent);
-        --panel: color-mix(in srgb, currentColor 4%, transparent);
-      }
-      body {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-      }
-      header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.5rem 1rem;
-        background: var(--accent);
-        color: #fff;
-      }
-      header h1 {
-        font-size: 1rem;
-        margin: 0;
-        white-space: nowrap;
-      }
-      header a {
-        color: inherit;
-        text-decoration: none;
-        opacity: 0.9;
-        white-space: nowrap;
-      }
-      header a:hover {
-        text-decoration: underline;
-      }
-      header .grow {
-        flex: 1;
-      }
-      #status {
-        font-size: 0.85rem;
-        opacity: 0.95;
-      }
-      progress {
-        width: 10rem;
-        vertical-align: middle;
-      }
-      progress:not([data-active]) {
-        display: none;
-      }
-      main {
-        flex: 1;
-        display: grid;
-        grid-template-columns: minmax(15rem, 20rem) 1fr;
-        min-height: 0;
-      }
-      aside {
-        border-right: 1px solid var(--line);
-        overflow: auto;
-        padding: 0.75rem 1rem;
-        font-size: 0.85rem;
-      }
-      aside h2 {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        opacity: 0.6;
-        margin: 1.25rem 0 0.5rem;
-      }
-      aside h2:first-child {
-        margin-top: 0;
-      }
-      .table {
-        margin-bottom: 0.75rem;
-      }
-      .table > button {
-        background: none;
-        border: 0;
-        padding: 0;
-        color: inherit;
-        font: inherit;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .table > button:hover {
-        color: var(--accent);
-      }
-      .table .rows {
-        opacity: 0.6;
-        font-weight: 400;
-      }
-      .table dl {
-        margin: 0.25rem 0 0;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 0 0.5rem;
-        font-family: ui-monospace, monospace;
-        font-size: 0.75rem;
-      }
-      .table dt {
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .table dd {
-        margin: 0;
-        opacity: 0.6;
-        text-align: right;
-      }
-      #examples button,
-      #drop {
-        display: block;
-        width: 100%;
-        text-align: left;
-        font: inherit;
-        font-size: 0.8rem;
-        margin-bottom: 0.35rem;
-        padding: 0.4rem 0.5rem;
-        border: 1px solid var(--line);
-        border-radius: 0.35rem;
-        background: var(--panel);
-        color: inherit;
-        cursor: pointer;
-      }
-      #examples button:hover {
-        border-color: var(--accent);
-      }
-      #drop {
-        border-style: dashed;
-        cursor: default;
-        text-align: center;
-        padding: 1rem 0.5rem;
-      }
-      #drop.over {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-      #drop input {
-        display: none;
-      }
-      #drop label {
-        text-decoration: underline;
-        cursor: pointer;
-      }
-      section.workbench {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        min-height: 0;
-      }
-      #editor {
-        font-family: ui-monospace, monospace;
-        font-size: 0.85rem;
-        line-height: 1.45;
-        border: 0;
-        border-bottom: 1px solid var(--line);
-        padding: 0.75rem 1rem;
-        resize: vertical;
-        height: 9rem;
-        background: transparent;
-        color: inherit;
-      }
-      #editor:focus {
-        outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
-        outline-offset: -2px;
-      }
-      .toolbar {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border-bottom: 1px solid var(--line);
-        font-size: 0.8rem;
-      }
-      .toolbar button {
-        font: inherit;
-        padding: 0.3rem 0.7rem;
-        border-radius: 0.35rem;
-        border: 1px solid var(--line);
-        background: var(--panel);
-        color: inherit;
-        cursor: pointer;
-      }
-      .toolbar button.primary {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #fff;
-        font-weight: 600;
-      }
-      .toolbar button:disabled {
-        opacity: 0.5;
-        cursor: progress;
-      }
-      .toolbar .grow {
-        flex: 1;
-      }
-      #timing {
-        font-family: ui-monospace, monospace;
-        opacity: 0.75;
-      }
-      .tabs {
-        display: flex;
-        gap: 0.25rem;
-        padding: 0.5rem 1rem 0;
-        font-size: 0.8rem;
-      }
-      .tabs button {
-        font: inherit;
-        border: 1px solid transparent;
-        border-bottom: 0;
-        background: none;
-        color: inherit;
-        opacity: 0.6;
-        padding: 0.3rem 0.7rem;
-        border-radius: 0.35rem 0.35rem 0 0;
-        cursor: pointer;
-      }
-      .tabs button[aria-selected="true"] {
-        opacity: 1;
-        font-weight: 600;
-        border-color: var(--line);
-        background: var(--panel);
-      }
-      #panes {
-        flex: 1;
-        overflow: auto;
-        padding: 0.5rem 1rem 1rem;
-        min-height: 0;
-      }
-      #panes > div[hidden] {
-        display: none;
-      }
-      pre.plan {
-        font-size: 0.78rem;
-        line-height: 1.5;
-        white-space: pre;
-        margin: 0;
-        overflow: auto;
-      }
-      pre.plan .op {
-        color: var(--accent);
-        font-weight: 600;
-      }
-      pre.plan .metric {
-        opacity: 0.7;
-      }
-      table.results {
-        border-collapse: collapse;
-        font-size: 0.8rem;
-        font-family: ui-monospace, monospace;
-      }
-      table.results th,
-      table.results td {
-        border: 1px solid var(--line);
-        padding: 0.2rem 0.5rem;
-        text-align: left;
-        white-space: pre-wrap;
-        vertical-align: top;
-      }
-      table.results thead th {
-        position: sticky;
-        top: 0;
-        background: color-mix(in srgb, currentColor 8%, Canvas);
-      }
-      table.results th .type {
-        display: block;
-        font-weight: 400;
-        opacity: 0.55;
-        font-size: 0.7rem;
-      }
-      table.results td.number {
-        text-align: right;
-      }
-      table.results td.null {
-        opacity: 0.4;
-      }
-      .error {
-        color: #b3261e;
-        font-family: ui-monospace, monospace;
-        font-size: 0.8rem;
-        white-space: pre-wrap;
-      }
-      .note {
-        font-size: 0.8rem;
-        opacity: 0.7;
-      }
-    </style>
+    <link rel="stylesheet" href="../src/datafusion.css" />
   </head>
-  <body>
-    <header>
-      <a href="/">&larr; Projects</a>
-      <h1>Apache DataFusion &mdash; WebAssembly</h1>
-      <span id="status">starting&hellip;</span>
-      <progress id="download" max="100"></progress>
-      <span class="grow"></span>
-      <span id="engine"></span>
+  <body class="app">
+    <header class="topbar">
+      <a class="topbar__back" href="/">&larr; Projects</a>
+      <h1>DataFusion</h1>
+      <span class="topbar__status" id="status">starting&hellip;</span>
+      <span class="topbar__grow"></span>
+      <span class="topbar__facts" id="engine"></span>
     </header>
-    <main>
-      <aside>
+    <main class="app__main">
+      <aside class="catalogue">
         <h2>Tables</h2>
         <div id="tables" class="note">waiting for the engine&hellip;</div>
         <div id="drop">
@@ -334,14 +48,15 @@
         <div id="examples"></div>
       </aside>
       <section class="workbench">
+        <div class="app__boot" id="boot"></div>
         <textarea id="editor" spellcheck="false" aria-label="SQL"></textarea>
         <div class="toolbar">
-          <button id="run" class="primary" type="button">Run</button>
-          <button id="explain" type="button">EXPLAIN</button>
-          <button id="analyze" type="button">EXPLAIN ANALYZE</button>
+          <button id="run" class="button button--primary" type="button">Run</button>
+          <button id="explain" class="button" type="button">EXPLAIN</button>
+          <button id="analyze" class="button" type="button">EXPLAIN ANALYZE</button>
           <span class="note">&#8984;/Ctrl + Enter</span>
-          <span class="grow"></span>
-          <span id="timing"></span>
+          <span class="toolbar__grow"></span>
+          <span class="note mono" id="timing"></span>
         </div>
         <div class="tabs" id="tabs">
           <button type="button" data-pane="results" aria-selected="true">Results</button>
@@ -349,12 +64,7 @@
           <button type="button" data-pane="logical" aria-selected="false">Logical plan</button>
         </div>
         <div id="panes">
-          <div id="pane-results">
-            <p class="note">
-              <strong>Nothing here runs on a server.</strong> The query engine is Apache DataFusion,
-              compiled to WebAssembly and running in this tab.
-            </p>
-          </div>
+          <div id="pane-results"></div>
           <div id="pane-physical" hidden></div>
           <div id="pane-logical" hidden></div>
         </div>

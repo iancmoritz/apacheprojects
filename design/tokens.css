@@ -1,0 +1,104 @@
+/*!
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+/*
+ * The one place colour, type and spacing are decided.  Every page of the site -- the project list
+ * and each project's own page -- reads these variables and nothing else, so the whole site moves
+ * together.
+ *
+ * The look: warm paper, black ink, one electric blue for anything you can act on, hairline rules
+ * instead of shadows, square corners, a grotesque for headings and a serif for prose.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* -- surfaces -------------------------------------------------------------------------------- */
+  --paper: #f7f6f5;
+  /* Panels sit on the paper as a barely-there wash rather than a card with a shadow. */
+  --wash: rgb(25 25 25 / 3%);
+  --wash-strong: rgb(25 25 25 / 6%);
+  --ink: #000;
+  --ink-soft: rgb(25 25 25 / 72%);
+  --ink-faint: rgb(25 25 25 / 56%);
+  --ink-ghost: rgb(25 25 25 / 34%);
+  --inverse: #191919;
+  --inverse-ink: #f7f6f5;
+
+  /* -- lines ----------------------------------------------------------------------------------- */
+  --rule: rgb(0 0 0 / 8%);
+  --rule-strong: rgb(0 0 0 / 16%);
+  --hairline: 1px;
+
+  /* -- accents --------------------------------------------------------------------------------- */
+  /* Interactive blue.  Every link, focus ring and running state is this colour, sitewide. */
+  --accent: #2200ff;
+  --accent-wash: rgb(34 0 255 / 8%);
+  /* Per-project mark, set on <html data-project> below; used for a dot or a rule, never for text. */
+  --brand: var(--accent);
+  --good: #17603a;
+  --bad: #b3261e;
+
+  /* -- type ------------------------------------------------------------------------------------ */
+  --font-heading: "Helvetica Neue", Inter, ui-sans-serif, system-ui, "Segoe UI", Arial, sans-serif;
+  --font-body: "Iowan Old Style", Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --step--2: 0.625rem; /* 10px: section numbers, eyebrows */
+  --step--1: 0.8125rem; /* 13px: labels, meta */
+  --step-0: 0.9375rem; /* 15px: body */
+  --step-1: 1.0625rem;
+  --step-2: clamp(1.25rem, 1rem + 1.1vw, 1.75rem);
+  --step-3: clamp(1.75rem, 1.1rem + 2.6vw, 3.25rem);
+
+  --leading-tight: 1.1;
+  --leading-body: 1.5;
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.06em;
+
+  /* -- space ----------------------------------------------------------------------------------- */
+  --gutter: clamp(1rem, 0.6rem + 1.6vw, 2.5rem);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2.5rem;
+  --space-7: 4rem;
+  --rail: 9.5rem; /* the navigation rail on the project list */
+  --measure: 42rem; /* prose width */
+
+  /* Square corners everywhere; the variable exists so nothing hard-codes a radius. */
+  --radius: 0;
+  --duration: 0.14s;
+}
+
+/* Each project page sets `data-project` on <html> to colour its own mark. */
+[data-project="airflow"] {
+  --brand: #017cee;
+}
+[data-project="datafusion"] {
+  --brand: #ff7f0e;
+}
+[data-project="iceberg"] {
+  --brand: #1f6feb;
+}
+[data-project="spark"] {
+  --brand: #e25a1c;
+}

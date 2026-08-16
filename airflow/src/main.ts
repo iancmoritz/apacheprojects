@@ -21,6 +21,9 @@
 // long-lived worker of its own (it is killed and restarted at the browser's discretion), and the
 // Airflow runtime takes a minute to boot, so it has to live where the tab lives.
 
+import { BootPanel } from "../../design/boot";
+
+import "./airflow.css";
 import type { HttpResult, Unidentified, WorkerRequest, WorkerResponse } from "./protocol";
 
 // Where the runtime is mounted, not where this page lives: the service worker answers everything
@@ -32,20 +35,26 @@ const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "modu
 const pending = new Map<number, { resolve: (value: unknown) => void; reject: (error: Error) => void }>();
 let nextId = 1;
 
-const log = document.querySelector<HTMLPreElement>("#log")!;
 const status = document.querySelector<HTMLSpanElement>("#status")!;
 const frame = document.querySelector<HTMLIFrameElement>("#ui")!;
 const heartbeat = document.querySelector<HTMLSpanElement>("#heartbeat")!;
 
-function say(text: string): void {
-  log.textContent += `${text}\n`;
-  log.scrollTop = log.scrollHeight;
-}
+const boot = new BootPanel({
+  mount: document.querySelector<HTMLElement>("#boot")!,
+  title: "Starting Apache Airflow",
+  detail:
+    "Nothing here runs on a server. CPython arrives as Pyodide, then the Airflow wheels, then " +
+    "Postgres as PGlite — and the API server, scheduler, Dag processor and worker all start in " +
+    "this tab.",
+  logs: [{ label: "Runtime log" }, { label: "Scheduler", collapsed: true }],
+});
+const say = (text: string): void => boot.say(text);
 
 worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
   const message = event.data;
   if (message.type === "progress") {
     status.textContent = message.text;
+    boot.now(message.text);
     say(message.text);
     return;
   }
@@ -110,9 +119,11 @@ function startScheduler(): void {
     try {
       const summary = await call<{ tasks: { task_id: string; state: string }[] }>({ type: "tick" });
       heartbeat.textContent = new Date().toLocaleTimeString();
-      for (const task of summary.tasks) say(`ran ${task.task_id} -> ${task.state}`);
+      for (const task of summary.tasks) {
+        boot.log("Scheduler").write(`ran ${task.task_id} -> ${task.state}`);
+      }
     } catch (error) {
-      say(`scheduler tick failed: ${(error as Error).message}`);
+      boot.log("Scheduler").write(`scheduler tick failed: ${(error as Error).message}`);
     } finally {
       running = false;
     }
@@ -128,22 +139,25 @@ async function main(): Promise<void> {
     location.reload();
   });
 
-  say("registering the request interceptor (service worker)");
+  const interceptor = boot.step("Registering the request interceptor (service worker)");
   await registerServiceWorker();
+  interceptor.done();
 
+  const runtime = boot.step("Booting Python, Postgres and Airflow in this tab");
   const info = await call<{ airflow_version: string; dags: { file: string }[] }>({
     type: "boot",
     baseUrl: `${location.origin}${BASE_PATH}`,
     dataDir: new URLSearchParams(location.search).get("dataDir") ?? undefined,
   });
-  say(`Airflow ${info.airflow_version} is up; parsed ${info.dags.length} Dag file(s)`);
+  runtime.done(`${info.dags.length} Dag file(s)`);
   status.textContent = `Airflow ${info.airflow_version} — running in this tab`;
 
   startScheduler();
   frame.src = BASE_PATH;
+  boot.ready(`Airflow ${info.airflow_version} is running in this tab`);
 }
 
 void main().catch((error: Error) => {
   status.textContent = "failed to start";
-  say(`boot failed: ${error.message}`);
+  boot.fail(`boot failed: ${error.message}`);
 });

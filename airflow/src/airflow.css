@@ -17,29 +17,20 @@
  * under the License.
  */
 
-import { defineConfig, type Plugin } from "vite";
+/* The site's design system, then the one thing that is only true here: Airflow's own UI in a frame. */
+@import "../../design/tokens.css";
+@import "../../design/system.css";
 
-import { serveSiteFiles } from "../design/site-files";
-
-// The project list at / and the design system's stylesheets are the repository root's, served here
-// in dev so that this project's dev server serves the whole site (see ../design/site-files.ts).
-function siteFiles(): Plugin {
-  return {
-    name: "site-files",
-    apply: "serve",
-    configureServer(server) {
-      server.middlewares.use(serveSiteFiles);
-    },
-  };
+/* Airflow's UI is the app once it is up; until then the frame has no src and takes no room. */
+#ui {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  border-top: var(--hairline) solid var(--rule-strong);
+  background: #fff;
 }
 
-export default defineConfig({
-  plugins: [siteFiles()],
-  build: {
-    target: "es2022",
-    sourcemap: true,
-    // The page lives at /iceberg/ so that the dev server and the assembled site have identical URLs.
-    rollupOptions: { input: { iceberg: "iceberg/index.html" } },
-  },
-  worker: { format: "es" },
-});
+#ui:not([src]) {
+  display: none;
+}

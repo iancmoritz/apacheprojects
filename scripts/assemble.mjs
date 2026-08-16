@@ -35,8 +35,8 @@ const OUT = join(ROOT, "dist");
 /** Top-level project directories, each of which builds a `dist/` of its own. */
 const PROJECTS = ["airflow", "datafusion", "iceberg", "spark"];
 
-/** Files the project list itself is made of. */
-const SITE_FILES = ["index.html", "projects.js"];
+/** Files the site itself is made of: the project list, and the design system every page loads. */
+const SITE_FILES = ["index.html", "projects.js", "design/tokens.css", "design/system.css"];
 
 /** Every file under `dir`, as paths relative to it. */
 async function walk(dir, prefix = "") {
@@ -71,6 +71,7 @@ async function main() {
   for (const file of SITE_FILES) {
     const taken = owner.get(file);
     if (taken) throw new Error(`${taken} emits ${file}, which the project list needs`);
+    await mkdir(dirname(join(OUT, file)), { recursive: true });
     await cp(join(ROOT, file), join(OUT, file));
   }
 

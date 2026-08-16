@@ -21,6 +21,9 @@
 // the table (snapshot log, warehouse directory, decoded file).  All of the interesting work happens
 // in the worker; this file only draws what comes back.
 
+import { BootPanel } from "../../design/boot";
+
+import "./iceberg.css";
 import type {
   Field,
   Preview,
@@ -40,7 +43,6 @@ let nextId = 1;
 
 const el = <T extends HTMLElement>(selector: string): T => document.querySelector<T>(selector)!;
 
-const log = el<HTMLPreElement>("#log");
 const status = el<HTMLSpanElement>("#status");
 const bootTime = el<HTMLSpanElement>("#boot-time");
 const stepResult = el<HTMLDivElement>("#step-result");
@@ -61,15 +63,25 @@ const buttons = {
   reset: el<HTMLButtonElement>("#reset"),
 };
 
+const boot = new BootPanel({
+  mount: el<HTMLElement>("#boot"),
+  title: "Starting Apache Iceberg",
+  detail:
+    "No server. CPython arrives as Pyodide, then the PyIceberg and DuckDB wheels. PyIceberg then " +
+    "writes a real Iceberg table — metadata JSON, manifest lists, manifests and Parquet — into " +
+    "this tab's filesystem, with a SQLite catalog; DuckDB answers the SQL.",
+  logs: [{ label: "Runtime log" }, { label: "Table activity", collapsed: true }],
+});
+
 function say(text: string): void {
-  log.textContent += `${text}\n`;
-  log.scrollTop = log.scrollHeight;
+  boot.say(text);
 }
 
 worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
   const message = event.data;
   if (message.type === "progress") {
     status.textContent = message.text;
+    boot.now(message.text);
     say(message.text);
     return;
   }
@@ -101,7 +113,7 @@ async function busy<T>(label: string, work: () => Promise<T>): Promise<T | undef
   } catch (error) {
     const text = (error as Error).message;
     stepResult.innerHTML = `<span class="error">${escape(text)}</span>`;
-    say(`${label}: ${text}`);
+    boot.log("Table activity").write(`${label}: ${text}`);
     return undefined;
   } finally {
     Object.values(buttons).forEach((button, index) => (button.disabled = previous[index]));
@@ -309,7 +321,7 @@ function step(button: HTMLButtonElement, label: string, name: string, payload: R
     const result = await busy(label, () => command<StepResult>(name, payload));
     if (!result) return;
     stepResult.textContent = `${result.detail} (${result.ms} ms)`;
-    say(`${name}: ${result.detail}`);
+    boot.log("Table activity").write(`${name}: ${result.detail}`);
     await refresh();
   };
 }
@@ -373,14 +385,18 @@ buttons.plan.onclick = async () => {
 // -- boot ---------------------------------------------------------------------------------------
 
 void (async () => {
+  const starting = boot.step("Loading CPython, PyIceberg and DuckDB into this tab");
   try {
     const info = await send<{ boot_ms?: number }>({ type: "boot" });
-    bootTime.textContent = info.boot_ms ? `booted in ${(info.boot_ms / 1000).toFixed(1)} s` : "booted";
-    say(`ready (${info.boot_ms} ms)`);
+    const took = info.boot_ms ? `${(info.boot_ms / 1000).toFixed(1)} s` : undefined;
+    starting.done(took);
+    bootTime.textContent = took ? `booted in ${took}` : "booted";
     status.textContent = "idle";
+    boot.ready(`PyIceberg and DuckDB are running in this tab${took ? ` · booted in ${took}` : ""}`);
     await refresh();
   } catch (error) {
     status.textContent = "boot failed";
-    say(`boot failed: ${(error as Error).message}`);
+    starting.failed("failed");
+    boot.fail(`boot failed: ${(error as Error).message}`);
   }
 })();
