@@ -134,11 +134,14 @@ async function main() {
   await mkdir(join(classes, "boot"), { recursive: true });
 
   const patches = await sources(join(PROJECT, "java", "patch"));
-  run(javac, ["-nowarn", "-cp", local, "-d", join(classes, "patch"), ...patches]);
+  // The upstream javadoc these patches keep is not ASCII, and javac takes its default encoding
+  // from the locale, which a build image like Vercel's does not set to UTF-8.
+  run(javac, ["-nowarn", "-encoding", "UTF-8", "-cp", local, "-d", join(classes, "patch"), ...patches]);
   run(jar, ["cf", join(OUT, "patch.jar"), "-C", join(classes, "patch"), "."]);
 
   run(javac, [
     "-nowarn",
+    "-encoding", "UTF-8",
     "-cp", `${join(OUT, "patch.jar")}:${local}`,
     "-d", join(classes, "boot"),
     join(PROJECT, "java", "Node.java"),
