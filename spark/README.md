@@ -39,7 +39,9 @@ page (spark/index.html, src/main.ts)
 ## Run it yourself
 
 Requirements: Node `^20.19 || >=22.12`, a Chromium/Firefox/Safari, ~1 GB of disk and ~2 GB of free
-memory in the tab.
+memory in the tab. The build patches Spark's own bytecode, so it needs a JDK; if the machine has no
+`javac` on `PATH` — which is the case on Vercel's build image — it downloads Temurin 17 into
+`.cache/jdk` and uses that. Beyond node, `tar` and that JDK it shells out to nothing.
 
 ```bash
 git clone https://github.com/iancmoritz/apacheprojects.git
@@ -65,7 +67,7 @@ Other scripts:
 
 | command | what it does |
 | --- | --- |
-| `npm run assets` | downloads Spark and writes the patched classpath, the dataset and the manifest into `public/_spark/` (gitignored); `node scripts/build-runtime.mjs --force` rebuilds |
+| `npm run assets` | downloads Spark (and a JDK, if needed) and writes the patched classpath, the dataset and the manifest into `public/_spark/` (gitignored); `node scripts/build-runtime.mjs --force` rebuilds |
 | `npm run typecheck` | `tsc --noEmit` |
 
 ## Measured
