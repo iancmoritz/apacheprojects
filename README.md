@@ -8,6 +8,7 @@ visitor's tab.
 | project | route | what it is |
 | --- | --- | --- |
 | [`airflow/`](airflow/) | `/airflow/` | Apache Airflow 3.3.1 — API server, scheduler, worker and Postgres all WebAssembly in the tab |
+| [`cassandra/`](cassandra/) | `/cassandra/` | Apache Cassandra 4.1.12 — a real multi-node cluster, one JVM per Web Worker under CheerpJ, gossiping over `postMessage` |
 | [`datafusion/`](datafusion/) | `/datafusion/` | Apache DataFusion 53.1 — the Rust query engine compiled to wasm, as a SQL workbench with plans |
 | [`iceberg/`](iceberg/) | `/iceberg/` | Apache Iceberg — PyIceberg writes a real table (metadata, manifests, Parquet) in the tab and DuckDB queries it, snapshots and time travel included |
 

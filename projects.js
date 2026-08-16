@@ -31,6 +31,16 @@ export const PROJECTS = [
     accent: "#017cee",
   },
   {
+    name: "Apache Cassandra",
+    version: "4.1.12",
+    href: "/cassandra/",
+    blurb:
+      "A real Cassandra cluster in one tab: each node is a JVM in its own Web Worker, gossiping " +
+      "over postMessage. Make an RF=3 keyspace, write and read at QUORUM, then kill a node.",
+    pieces: ["CheerpJ", "Web Workers", "CQL"],
+    accent: "#1287a8",
+  },
+  {
     name: "Apache DataFusion",
     version: "53.1.0",
     href: "/datafusion/",
