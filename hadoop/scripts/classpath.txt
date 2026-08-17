@@ -1,0 +1,22 @@
+# The jars the tab runs, as paths under https://repo1.maven.org/maven2.
+#
+# These are Apache Hadoop's own published "client" artifacts: hadoop-client-api and
+# hadoop-client-runtime are the split of Hadoop's client with its dependencies shaded inside, and
+# hadoop-client-minicluster adds the server side -- NameNode, DataNode, the MapReduce local runner and
+# the MiniDFSCluster harness -- with its dependencies shaded too.  Taking these three rather than the
+# ~60 jars of the binary tarball is not a shortcut: it is the same Hadoop bytecode, in the packaging
+# the ASF publishes for embedding, and it keeps the browser to three jar URLs instead of sixty.
+#
+# Logging is the one thing the shaded jars deliberately leave out (slf4j has to be on the outside so
+# an embedder can pick a binding), so it is here.
+
+org/apache/hadoop/hadoop-client-api/3.3.6/hadoop-client-api-3.3.6.jar
+org/apache/hadoop/hadoop-client-runtime/3.3.6/hadoop-client-runtime-3.3.6.jar
+org/apache/hadoop/hadoop-client-minicluster/3.3.6/hadoop-client-minicluster-3.3.6.jar
+org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar
+org/slf4j/slf4j-reload4j/1.7.36/slf4j-reload4j-1.7.36.jar
+ch/qos/reload4j/reload4j/1.2.22/reload4j-1.2.22.jar
+commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar
+
+# What the build's own bytecode passes are written against; not shipped to the browser.
+org/apache/xbean/xbean-asm9-shaded/4.23/xbean-asm9-shaded-4.23.jar

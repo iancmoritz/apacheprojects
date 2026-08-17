@@ -51,6 +51,16 @@ export const PROJECTS = [
     accent: "#e6526f",
   },
   {
+    name: "Apache Hadoop",
+    version: "3.3.6",
+    href: "/hadoop/",
+    blurb:
+      "A real NameNode and DataNode in your tab: an HDFS namespace with genuine blocks and an " +
+      "edit log, and Hadoop's own MapReduce, with the counters and splits Hadoop reports.",
+    pieces: ["CheerpJ", "MiniDFSCluster", "MapReduce"],
+    accent: "#66cbf0",
+  },
+  {
     name: "Apache Iceberg",
     version: "PyIceberg 0.11.1",
     href: "/iceberg/",

@@ -1,0 +1,47 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+ A development page, not part of the site: `vite build` only takes hadoop/index.html, so this is
+ reachable from the dev server (/probe.html) and nowhere else.  It runs
+ java/.../console/Probe.java, which is the list of JDK calls Hadoop's daemons need and a browser JVM
+ may not have.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CheerpJ capability probe</title>
+    <style>
+      body {
+        font-family: ui-monospace, monospace;
+        padding: 1rem;
+        font-size: 0.85rem;
+        color-scheme: light dark;
+      }
+      pre {
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>What this JVM can do</h1>
+    <pre id="out">running…</pre>
+    <script src="https://cjrtnc.leaningtech.com/4.2/loader.js"></script>
+    <script type="module" src="/src/probe.ts"></script>
+  </body>
+</html>
