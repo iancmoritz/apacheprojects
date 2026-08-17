@@ -41,6 +41,16 @@ export const PROJECTS = [
     accent: "#ff7f0e",
   },
   {
+    name: "Apache Flink",
+    version: "1.20.5",
+    href: "/flink/",
+    blurb:
+      "A real Flink MiniCluster — JobManager, TaskManager, checkpoints — on a JVM compiled to " +
+      "WebAssembly. Feed the stream and watch event-time windows close, in Flink's own dashboard.",
+    pieces: ["CheerpJ", "DataStream", "Flink dashboard"],
+    accent: "#e6526f",
+  },
+  {
     name: "Apache Hadoop",
     version: "3.3.6",
     href: "/hadoop/",
