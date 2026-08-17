@@ -110,11 +110,20 @@ public class Node {
     int index = Integer.parseInt(args[0]);
     logVerbs = args.length > 2 && "verbs".equals(args[2]);
     String addr = "127.0.0." + index;
-    String dir = "/files/node" + index;
+    String base = "/files/node" + index;
+    String dir = base;
 
     if (!"keep".equals(System.getProperty("boot.data", ""))) {
-      rmdir(new File(dir));
-      mark("wiped " + dir);
+      rmdir(new File(base));
+      String[] left = new File(base).list();
+      if (left != null && left.length > 0) {
+        // CheerpJ's filesystem does not always honour delete(), and a commitlog segment left
+        // half-written by an earlier visit stops this node during replay, so start somewhere new.
+        dir = base + "-" + System.currentTimeMillis();
+        mark(left.length + " files survived wiping " + base + "; starting in " + dir);
+      } else {
+        mark("wiped " + base);
+      }
     }
     new File(dir).mkdirs();
     File conf = new File(dir + "/cassandra.yaml");

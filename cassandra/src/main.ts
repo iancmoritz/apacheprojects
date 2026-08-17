@@ -168,6 +168,10 @@ function renderCluster() {
   }
   const anyUp = targetSelect.options.length > 0;
   const booting = [...nodes.values()].some((node) => node.state === "booting") || !peersStarted;
+  if (!booting) {
+    const up = [...nodes.values()].filter((node) => node.state === "up").length;
+    stage.textContent = `${up}/${nodes.size} nodes up`;
+  }
   runButton.disabled = !anyUp;
   // The demo picks its replication factor from the nodes that are up, so let the cluster finish.
   demoButton.disabled = !anyUp || booting;
@@ -178,7 +182,6 @@ function handle(node: Node, message: NodeMessage) {
     node.state = "up";
     node.bootMs = message.ms;
     log(`node ${node.index} is NORMAL after ${(message.ms / 1000).toFixed(1)}s`, "ok");
-    stage.textContent = `${[...nodes.values()].filter((n) => n.state === "up").length}/${nodes.size} nodes up`;
     if (node.index === 1) startPeers();
   } else if (message.type === "status") {
     if (node.state === "booting") node.state = "up";
@@ -217,7 +220,12 @@ function spawn(index: number, total: number): Node {
       handle(node, JSON.parse(message.json) as NodeMessage);
     } else if (message.type === "error" || message.type === "exit") {
       node.state = "failed";
-      node.error = message.type === "error" ? message.error : `exited with ${message.code}`;
+      // A JVM that dies during startup only reports its exit code, so say what it was doing:
+      // the browser console has the stack trace, the page at least has the stage.
+      node.error =
+        message.type === "error"
+          ? message.error
+          : `exited with ${message.code} while ${node.stage} (see the console for its log)`;
       log(`node ${index} ${node.error}`, "err");
       renderCluster();
     }
