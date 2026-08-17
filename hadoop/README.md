@@ -73,8 +73,8 @@ ticked the console is live.
   IDs, generation stamps and DataNode the NameNode reports for a file), `cat`, `df`. The cluster panel
   shows the NameNode address, safe mode, the namespace's file/block counts, the edit log's
   transaction id and the DataNode's registration. Under `npm run dev` this sometimes freezes partway
-  through — Vite serving 130 MB of jars competes with the JVM for the one core CheerpJ schedules on;
-  against the built site it completed on every run.
+  through — see the limitations; give the tab a quiet machine, and prefer the built site over the dev
+  server for HDFS.
 
 Both modes take one run per page load — see the limitations — so the button turns into **Reload to run
 again**.
@@ -186,9 +186,14 @@ than Spark's Scala did — none of `spark/`'s `wide`-locals, lambda or `Unsafe` 
   delivered because the watchdog thread stops with everything else. It is not the interrupt bug above
   either: it happens identically with that shim off (`?unpark=0`), with the shim never compiled in,
   and with the daemons' handler pools cut to one thread each. It looks like CheerpJ's cooperative
-  scheduler giving up on a JVM with this many live threads — the same failure that occasionally ends
-  an HDFS-only run under the dev server. So the page ships both modes, labelled, rather than a job
-  that pretends to be over HDFS.
+  scheduler giving up on a JVM with this many live threads. So the page ships both modes, labelled,
+  rather than a job that pretends to be over HDFS.
+- **HDFS mode needs the machine to itself.** The same freeze can take an HDFS-only run, before any job
+  is submitted, when the tab is competing for CPU: it completed 5 of 5 runs against the built site on
+  an idle machine (~29 s), and froze most runs when a Vite dev server was serving its 130 MB of jars
+  from the same two cores, or when a screen recorder and a second browser were running. There is no
+  timeout and no error when it happens — the tab pegs one core and never repaints, which is what the
+  watchdog was written for. Local mode has never done this.
 - **No web UIs.** The NameNode UI and the job history server need a listening socket, which no tab
   has. The cluster panel and the job panels on the page are Hadoop's own APIs rendered by the page
   instead. (The `airflow/`-style service-worker route would still need the daemon to answer a real

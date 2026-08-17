@@ -472,7 +472,7 @@ async function main() {
     writePath.value = `${mode.value === "local" ? LOCAL_HOME : HOME}/input/typed.txt`;
     modeNote.textContent =
       mode.value === "hdfs"
-        ? "A real NameNode and DataNode in this tab. wordcount freezes the JVM in this mode."
+        ? "A real NameNode and DataNode in this tab. Wants a quiet machine, and wordcount freezes the JVM in this mode."
         : "Hadoop's LocalFileSystem over CheerpJ's filesystem: no daemons, and wordcount finishes.";
   });
   runGo.addEventListener("click", () => (ran ? location.reload() : void run(driver)));

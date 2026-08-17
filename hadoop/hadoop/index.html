@@ -311,7 +311,8 @@
               </select>
               <span class="note" id="mode-note"
                 >Hadoop&rsquo;s <code>LocalFileSystem</code> over CheerpJ&rsquo;s filesystem: no
-                daemons, and <code>wordcount</code> finishes.</span
+                daemons, and <code>wordcount</code> finishes. HDFS mode wants a
+                <a href="#limits">quiet machine</a>.</span
               >
             </div>
             <div class="note">
@@ -435,6 +436,13 @@
               lock Hadoop is holding. Not the interrupt bug above either: it happens identically with
               that shim off (<code>?unpark=0</code>), with the shim never compiled in, and with the
               daemons&rsquo; pools cut to one handler each.
+            </li>
+            <li>
+              <strong>HDFS mode wants the machine to itself.</strong> The same freeze can take an
+              HDFS-only run, before any job is submitted, when this tab is competing for CPU: it
+              finished every run on an idle machine and froze most runs while a dev server was serving
+              its 130 MB of jars from the same two cores. There is no timeout when it happens — the tab
+              pegs one core and stops repainting. Local mode has never done it.
             </li>
           </ul>
         </section>
