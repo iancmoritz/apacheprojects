@@ -17,37 +17,24 @@
  * under the License.
  */
 
-import { readFileSync } from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 
-// In production the project list at / is a static file the repo root owns and
-// ../scripts/assemble.mjs copies next to this build; in `npm run dev` there is no assemble step, so
-// serve it from here.  Both pages have to be one origin: the service worker this app installs can
-// only intercept its own.
-function rootProjectList(): Plugin {
-  const files: Record<string, [string, string]> = {
-    "/": ["../index.html", "text/html"],
-    "/index.html": ["../index.html", "text/html"],
-    "/projects.js": ["../projects.js", "text/javascript"],
-  };
+import { serveSiteFiles } from "../design/site-files";
 
+// The project list at / and the design system's stylesheets are the repository root's, served here
+// in dev so that this project's dev server serves the whole site (see ../design/site-files.ts).
+function siteFiles(): Plugin {
   return {
-    name: "root-project-list",
+    name: "site-files",
     apply: "serve",
     configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        const entry = files[(req.url ?? "").split("?")[0]];
-        if (!entry) return next();
-        const [file, type] = entry;
-        res.setHeader("Content-Type", type);
-        res.end(readFileSync(new URL(file, import.meta.url)));
-      });
+      server.middlewares.use(serveSiteFiles);
     },
   };
 }
 
 export default defineConfig({
-  plugins: [rootProjectList()],
+  plugins: [siteFiles()],
   build: {
     target: "es2022",
     sourcemap: true,

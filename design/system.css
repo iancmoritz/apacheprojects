@@ -1,0 +1,1006 @@
+/*!
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+/*
+ * The site's components, built out of design/tokens.css: page chrome, prose, panels, controls,
+ * tables and the boot panel every project shows while it loads itself into the tab.
+ *
+ * Class names are the vocabulary the pages speak: a project page writes `<header class="topbar">`
+ * and gets the same header as every other project, and a control is a `.button` whatever it does.
+ */
+
+/* -- base ---------------------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--step-3);
+}
+h2 {
+  font-size: var(--step-2);
+}
+h3 {
+  font-size: var(--step-1);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: from-font;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+code,
+pre,
+.mono,
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+pre {
+  margin: 0;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--inverse-ink);
+}
+
+/* -- type helpers -------------------------------------------------------------------------------- */
+
+/* The small uppercase-ish label above a block; on cognition.com these are the section numbers. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+}
+
+.lede {
+  font-size: var(--step-1);
+  max-width: var(--measure);
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+.prose + .prose {
+  margin-top: var(--space-4);
+}
+
+.muted {
+  color: var(--ink-faint);
+}
+
+.meta {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  color: var(--ink-faint);
+}
+
+.serif-link {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* -- the project list at / ----------------------------------------------------------------------- */
+
+.site {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  gap: 0 var(--gutter);
+  align-items: start;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: var(--space-5) var(--gutter) var(--space-7);
+}
+
+/* The rail: the mark and the links, pinned while the list scrolls past it. */
+.rail {
+  position: sticky;
+  top: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+}
+
+.rail__home {
+  color: var(--ink);
+  letter-spacing: var(--tracking-tight);
+}
+
+.rail__source {
+  color: var(--ink-faint);
+}
+
+.rail__links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rail__links a {
+  color: var(--ink);
+  padding-left: 0.6rem;
+  border-left: var(--hairline) solid transparent;
+}
+
+.rail__links a[aria-current="page"],
+.rail__links a:hover {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  text-decoration: none;
+}
+
+.site__main {
+  display: flex;
+  flex-direction: column;
+  border-left: var(--hairline) solid var(--rule);
+  padding-left: var(--gutter);
+}
+
+/* A numbered band of the page: the number sits in the left margin on wide screens. */
+.band {
+  position: relative;
+  padding: var(--space-6) 0;
+  border-bottom: var(--hairline) solid var(--rule);
+}
+
+.band:first-child {
+  padding-top: var(--space-2);
+}
+
+.band:last-child {
+  border-bottom: 0;
+}
+
+/* Bands are one thought each, so their parts only ever need one rhythm between them. */
+.band > * + * {
+  margin-top: var(--space-4);
+}
+
+.band > .eyebrow {
+  position: absolute;
+  left: calc(-1 * var(--gutter) - 1.4rem);
+  top: calc(var(--space-6) + 0.35rem);
+}
+
+@media (max-width: 60rem) {
+  .site {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: var(--space-4);
+  }
+
+  .rail {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: var(--hairline) solid var(--rule);
+  }
+
+  .rail__links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+  }
+
+  /* On a phone the rail is one line: the mark and the projects, with the source link at the foot. */
+  .rail__source {
+    display: none;
+  }
+
+  .rail__links a {
+    padding-left: 0;
+    border-left: 0;
+    border-bottom: var(--hairline) solid transparent;
+  }
+
+  .rail__links a[aria-current="page"],
+  .rail__links a:hover {
+    border-left-color: transparent;
+    border-bottom-color: var(--accent);
+  }
+
+  .site__main {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .band > .eyebrow {
+    position: static;
+  }
+}
+
+/* -- project cards ------------------------------------------------------------------------------- */
+
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--hairline);
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+}
+
+/*
+ * Cards are cells in a hairline grid: each is outlined, and the gap is one hairline wide, so
+ * neighbouring outlines land on the same line.  An outline rather than a border keeps the grid even
+ * when the last row is short -- an empty cell is simply paper.
+ */
+.card {
+  background: var(--paper);
+  outline: var(--hairline) solid var(--rule);
+  transition: background var(--duration) ease;
+}
+
+.card:hover {
+  background: var(--wash);
+}
+
+.card > a {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  color: var(--ink);
+}
+
+.card > a:hover {
+  text-decoration: none;
+}
+
+.card__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--step-1);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* The one place a project's own colour shows up on the list. */
+.card__title::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  background: var(--brand, var(--accent));
+}
+
+.card__version {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  color: var(--ink-faint);
+  margin-left: auto;
+}
+
+.card p {
+  color: var(--ink-soft);
+}
+
+.card__open {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  color: var(--accent);
+}
+
+.card > a:hover .card__open {
+  text-decoration: underline;
+}
+
+/* -- chips --------------------------------------------------------------------------------------- */
+
+.chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  font-family: var(--font-heading);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border: var(--hairline) solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+}
+
+/* -- app chrome ---------------------------------------------------------------------------------- */
+
+/* Every project page wears the same bar: back to the list, its name, what it is doing, its facts. */
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--gutter);
+  background: var(--paper);
+  border-bottom: var(--hairline) solid var(--rule-strong);
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+}
+
+.topbar__back {
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.topbar__back:hover {
+  color: var(--accent);
+}
+
+.topbar h1 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--step-0);
+  letter-spacing: var(--tracking-tight);
+  white-space: nowrap;
+}
+
+.topbar h1::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--brand);
+  flex: none;
+}
+
+.topbar__grow {
+  flex: 1;
+}
+
+.topbar__status {
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar__facts {
+  color: var(--ink-faint);
+  font-size: var(--step--2);
+  text-align: right;
+  line-height: 1.4;
+}
+
+@media (max-width: 40rem) {
+  .topbar__facts {
+    text-align: left;
+  }
+}
+
+/* Every project page is the same shell: the bar, then one region that fills the rest of the tab. */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.app__main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Where the boot panel is mounted, and where it stays -- collapsed -- once the project is up. */
+.app__boot {
+  padding: var(--space-4) var(--gutter);
+}
+
+/* -- controls ------------------------------------------------------------------------------------ */
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.button,
+button.button {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  border: var(--hairline) solid var(--ink);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration) ease, color var(--duration) ease,
+    border-color var(--duration) ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--inverse);
+  border-color: var(--inverse);
+  color: var(--inverse-ink);
+}
+
+.button--primary {
+  background: var(--inverse);
+  border-color: var(--inverse);
+  color: var(--inverse-ink);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.button--quiet {
+  border-color: var(--rule-strong);
+  color: var(--ink-soft);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.field,
+input[type="text"],
+textarea,
+select {
+  border: var(--hairline) solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--wash);
+  padding: 0.3rem 0.45rem;
+}
+
+textarea,
+input[type="text"] {
+  width: 100%;
+}
+
+textarea {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  line-height: 1.45;
+  resize: vertical;
+}
+
+label {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  color: var(--ink-faint);
+}
+
+/* -- panels -------------------------------------------------------------------------------------- */
+
+.panel {
+  border: var(--hairline) solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--wash);
+  padding: var(--space-3);
+}
+
+.panel > * + * {
+  margin-top: var(--space-2);
+}
+
+.panel > h2,
+.panel > h3 {
+  font-family: var(--font-heading);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-2);
+}
+
+/* A strip of controls across a pane, ruled off from what it acts on. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--gutter);
+  border-bottom: var(--hairline) solid var(--rule);
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+}
+
+.toolbar__grow {
+  flex: 1;
+}
+
+/* An aside in small type: what a control does, how many rows came back. */
+.note {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  color: var(--ink-faint);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* -- tabs ---------------------------------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: var(--space-4);
+  border-bottom: var(--hairline) solid var(--rule-strong);
+}
+
+.tabs button {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  border: 0;
+  background: none;
+  color: var(--ink-faint);
+  padding: var(--space-2) 0;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tabs button:hover {
+  color: var(--ink);
+}
+
+.tabs button[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+/* -- tables -------------------------------------------------------------------------------------- */
+
+table.grid {
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  width: 100%;
+}
+
+table.grid th,
+table.grid td {
+  border: var(--hairline) solid var(--rule);
+  padding: 0.2rem 0.45rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+table.grid th {
+  background: var(--wash-strong);
+  font-family: var(--font-heading);
+  font-weight: 400;
+  color: var(--ink-soft);
+  letter-spacing: 0;
+}
+
+table.grid td.num {
+  text-align: right;
+}
+
+table.grid td.null {
+  color: var(--ink-ghost);
+}
+
+.scroll {
+  overflow: auto;
+}
+
+/* -- states -------------------------------------------------------------------------------------- */
+
+.error {
+  color: var(--bad);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  white-space: pre-wrap;
+}
+
+/* -- the boot panel ------------------------------------------------------------------------------ */
+
+/*
+ * What every project shows while it downloads and starts itself: one honest sentence, a progress
+ * bar, the steps as they happen, and the log the runtime is actually writing -- open by default,
+ * because on this site the loading *is* the demo.
+ */
+
+.boot {
+  border: var(--hairline) solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+}
+
+.boot__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2) var(--space-4);
+  align-items: start;
+  padding: var(--space-4);
+}
+
+.boot__title {
+  font-family: var(--font-heading);
+  font-size: var(--step-1);
+  letter-spacing: var(--tracking-tight);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.boot__title::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  background: var(--brand);
+  animation: boot-pulse 1.6s ease-in-out infinite;
+}
+
+.boot__detail {
+  grid-column: 1;
+  color: var(--ink-soft);
+  max-width: var(--measure);
+}
+
+/* Elapsed time and bytes: mono, right-aligned, so the numbers tick in place. */
+.boot__counters {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.boot__meter {
+  height: 3px;
+  background: var(--wash-strong);
+  overflow: hidden;
+}
+
+.boot__bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.2s linear;
+}
+
+/* No byte counts to go on: a bar that travels, so the page still shows it is working. */
+.boot[data-progress="indeterminate"] .boot__bar {
+  width: 30%;
+  animation: boot-travel 1.4s ease-in-out infinite;
+}
+
+.boot[data-state="done"] .boot__bar {
+  width: 100%;
+  background: var(--good);
+}
+
+.boot[data-state="failed"] .boot__bar {
+  background: var(--bad);
+}
+
+.boot[data-state="done"] .boot__title::before,
+.boot[data-state="failed"] .boot__title::before {
+  animation: none;
+}
+
+.boot[data-state="done"] .boot__title::before {
+  background: var(--good);
+}
+
+.boot[data-state="failed"] .boot__title::before {
+  background: var(--bad);
+}
+
+.boot__now {
+  padding: var(--space-2) var(--space-4);
+  border-bottom: var(--hairline) solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink-soft);
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.boot__now::before {
+  content: "›";
+  color: var(--accent);
+}
+
+.boot__steps {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: var(--step--1);
+}
+
+.boot__step {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: baseline;
+  color: var(--ink-soft);
+}
+
+.boot__step::before {
+  font-family: var(--font-mono);
+  color: var(--ink-ghost);
+  content: "·";
+  display: inline-block;
+  text-align: center;
+}
+
+.boot__step[data-state="running"] {
+  color: var(--ink);
+}
+
+.boot__step[data-state="running"]::before {
+  content: "◐";
+  color: var(--accent);
+  animation: boot-spin 1s steps(4) infinite;
+}
+
+.boot__step[data-state="done"]::before {
+  content: "✓";
+  color: var(--good);
+}
+
+.boot__step[data-state="failed"] {
+  color: var(--bad);
+}
+
+.boot__step[data-state="failed"]::before {
+  content: "✕";
+  color: var(--bad);
+}
+
+.boot__timing {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.boot__logs {
+  display: flex;
+  flex-direction: column;
+  border-top: var(--hairline) solid var(--rule);
+}
+
+.boot__log {
+  border-bottom: var(--hairline) solid var(--rule);
+}
+
+.boot__log:last-child {
+  border-bottom: 0;
+}
+
+.boot__log > summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-heading);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.boot__log > summary::marker,
+.boot__log > summary::-webkit-details-marker {
+  content: "";
+  display: none;
+}
+
+.boot__log > summary::before {
+  content: "+";
+  font-family: var(--font-mono);
+  width: 0.7rem;
+}
+
+.boot__log[open] > summary::before {
+  content: "–";
+}
+
+.boot__log > summary:hover {
+  color: var(--ink);
+}
+
+.boot__count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.boot__lines {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-3);
+  max-height: 14rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+
+.boot__lines:empty::after {
+  content: "nothing yet";
+  color: var(--ink-ghost);
+}
+
+.boot__note {
+  padding: var(--space-3) var(--space-4);
+  border-top: var(--hairline) solid var(--rule);
+  font-size: var(--step--1);
+  color: var(--ink-soft);
+}
+
+.boot__note--error {
+  color: var(--bad);
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+}
+
+/* Ready: the panel steps out of the way, keeping the log one click away. */
+.boot[data-state="done"] .boot__steps,
+.boot[data-state="done"] .boot__now,
+.boot[data-state="done"] .boot__detail {
+  display: none;
+}
+
+.boot[data-state="done"] .boot__head {
+  padding-bottom: var(--space-3);
+}
+
+.boot[data-state="done"] .boot__title {
+  font-size: var(--step-0);
+}
+
+@container (max-width: 30rem) {
+  .boot__head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .boot__counters {
+    grid-column: 1;
+    grid-row: auto;
+    flex-direction: row;
+    gap: var(--space-3);
+    align-items: baseline;
+  }
+}
+
+@keyframes boot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes boot-travel {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(333%);
+  }
+}
+
+@keyframes boot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot__title::before,
+  .boot[data-progress="indeterminate"] .boot__bar,
+  .boot__step[data-state="running"]::before {
+    animation: none;
+  }
+}

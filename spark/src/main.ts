@@ -20,8 +20,12 @@
 // The page: boot the JVM, start the driver, then hand whatever the visitor types to Spark and render
 // what comes back.  The interesting code is on the other side of this file, in ../java.
 
+import { BootPanel } from "../../design/boot";
+
 import { boot, type Driver } from "./driver";
 import { type Rows, type Session } from "./protocol";
+
+import "./spark.css";
 
 const SAMPLES: [string, string][] = [
   [
@@ -73,8 +77,6 @@ function describe(error: unknown): string {
 
 const status = element("status");
 const facts = element("facts");
-const steps = element<HTMLOListElement>("steps");
-const log = element<HTMLPreElement>("log");
 const consoleSection = element("query");
 const sql = element<HTMLTextAreaElement>("sql");
 const samples = element<HTMLSelectElement>("samples");
@@ -100,36 +102,27 @@ function transferred(): number {
 const mb = (bytes: number) => `${(bytes / 1e6).toFixed(0)} MB`;
 const seconds = (ms: number) => `${(ms / 1000).toFixed(1)} s`;
 
-/** One boot step, shown in the page while it runs and timed when it finishes. */
-function step(text: string) {
-  const item = document.createElement("li");
-  item.dataset.state = "running";
-  item.textContent = text;
-  const timing = document.createElement("span");
-  timing.className = "ms";
-  item.append(timing);
-  steps.append(item);
-  const started = performance.now();
-  return {
-    done(detail?: string) {
-      item.dataset.state = "done";
-      timing.textContent = ` ${detail ? `${detail}, ` : ""}${seconds(performance.now() - started)}`;
-    },
-    failed(detail: string) {
-      item.dataset.state = "failed";
-      timing.textContent = ` ${detail}`;
-    },
-  };
-}
+const bootPanel = new BootPanel({
+  mount: element("boot"),
+  title: "Starting Apache Spark",
+  detail:
+    "Nothing here runs on a server. A real Spark 3.5.9 driver — Catalyst, the DAG scheduler, the " +
+    "block manager and its shuffle — starts in this tab on a JVM compiled to WebAssembly, reading " +
+    "its own jars off this origin. The dataset is one row per class in Spark's jars, so the queries " +
+    "below are queries about the Spark that is answering them.",
+  logs: [{ label: "Runtime log" }, { label: "JVM stdout", collapsed: true }],
+});
 
+const step = (text: string) => bootPanel.step(text);
+
+/** The JVM's own stdout, kept in a pane of its own so the boot steps stay readable. */
 function line(text: string) {
-  const atBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 4;
-  log.append(`${text}\n`);
-  if (atBottom) log.scrollTop = log.scrollHeight;
+  bootPanel.log("JVM stdout").write(text);
 }
 
 function table(columns: string[], types: string[], rows: (string | null)[][]): HTMLElement {
   const table = document.createElement("table");
+  table.className = "grid";
   const head = table.insertRow();
   columns.forEach((column, i) => {
     const cell = document.createElement("th");
@@ -144,7 +137,7 @@ function table(columns: string[], types: string[], rows: (string | null)[][]): H
     for (const value of row) {
       const cell = line.insertCell();
       cell.textContent = value ?? "NULL";
-      if (value === null) cell.className = "note";
+      if (value === null) cell.className = "null";
       else if (/^-?\d+(\.\d+)?$/.test(value)) cell.className = "num";
     }
   }
@@ -217,7 +210,7 @@ async function execute(driver: Driver) {
     note.textContent = describe(error);
   } finally {
     run.disabled = false;
-    line(`> ${statement.replace(/\n/g, " ")}  (${seconds(performance.now() - started)})`);
+    bootPanel.say(`> ${statement.replace(/\n/g, " ")}  (${seconds(performance.now() - started)})`);
   }
 }
 
@@ -227,6 +220,9 @@ function ready(session: Session, bootMs: number) {
     `boot ${seconds(bootMs)} &middot; ${mb(transferred())} downloaded<br />` +
     `Scala ${session.scalaVersion} &middot; JVM ${session.javaVersion} (CheerpJ) &middot; ${session.cores} core${session.cores === 1 ? "" : "s"}`;
   schema.textContent = `${session.view} (${session.schema.join(", ")})`;
+  bootPanel.ready(
+    `Spark ${session.version} is running in this tab · ${mb(transferred())} of jars in ${seconds(bootMs)}`,
+  );
   consoleSection.hidden = false;
   sql.value = SAMPLES[0][1];
   for (const [name, statement] of SAMPLES) {
@@ -252,8 +248,8 @@ async function main() {
     });
   } catch (error) {
     status.textContent = "failed";
-    hooks.failed(describe(error));
-    line(describe(error));
+    hooks.failed("failed");
+    bootPanel.fail(describe(error));
     return;
   }
   ready(driver.session, driver.bootMs);

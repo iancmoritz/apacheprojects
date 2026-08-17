@@ -23,6 +23,9 @@
 
 import { DataType, tableFromIPC, type Table } from "apache-arrow";
 
+import { BootPanel } from "../../design/boot";
+
+import "./datafusion.css";
 import { EXAMPLES } from "./examples";
 import type { BootInfo, QueryResults, TableInfo, Unidentified, WorkerRequest, WorkerResponse } from "./protocol";
 
@@ -34,7 +37,6 @@ const pending = new Map<number, { resolve: (value: unknown) => void; reject: (er
 let nextId = 1;
 
 const status = element<HTMLSpanElement>("#status");
-const download = element<HTMLProgressElement>("#download");
 const engine = element<HTMLSpanElement>("#engine");
 const editor = element<HTMLTextAreaElement>("#editor");
 const timing = element<HTMLSpanElement>("#timing");
@@ -51,15 +53,26 @@ function element<T extends Element>(selector: string): T {
   return found;
 }
 
+const boot = new BootPanel({
+  mount: element<HTMLElement>("#boot"),
+  title: "Starting Apache DataFusion",
+  detail:
+    "Nothing here runs on a server. The Rust query engine is compiled to WebAssembly and is being " +
+    "fetched into this tab, along with the CSV and Parquet it registers as tables.",
+});
+
 worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
   const message = event.data;
   if (message.type === "progress") {
     status.textContent = message.text;
-    if (message.loaded === undefined) delete download.dataset.active;
-    else {
-      download.dataset.active = "";
-      download.value = message.total ? Math.min(100, (message.loaded / message.total) * 100) : 0;
+    boot.progress(message.loaded, message.total);
+    if (message.loaded === undefined) {
+      boot.now(message.text);
+      boot.say(message.text);
+    } else {
+      // A download reports itself many times over; the line above the steps moves, the log does not.
       status.textContent = `${message.text} — ${megabytes(message.loaded)}`;
+      boot.now(`${message.text} — ${megabytes(message.loaded)}`);
     }
     return;
   }
@@ -161,7 +174,7 @@ function cell(value: unknown, type: DataType): { text: string; numeric: boolean 
 function renderResults(table: Table, results: QueryResults): void {
   const fields = table.schema.fields;
   const grid = document.createElement("table");
-  grid.className = "results";
+  grid.className = "grid";
 
   const head = document.createElement("thead");
   const headRow = document.createElement("tr");
@@ -185,7 +198,7 @@ function renderResults(table: Table, results: QueryResults): void {
       const td = document.createElement("td");
       td.textContent = rendered.text;
       if (rendered.text === "NULL") td.className = "null";
-      else if (rendered.numeric) td.className = "number";
+      else if (rendered.numeric) td.className = "num";
       line.append(td);
     }
     body.append(line);
@@ -363,20 +376,21 @@ async function main(): Promise<void> {
   renderExamples();
   editor.value = EXAMPLES[0].sql;
 
+  const starting = boot.step("Fetching the engine and registering the bundled tables");
   const info = await call<BootInfo>({ type: "boot" });
-  delete download.dataset.active;
+  starting.done(`${info.tables.length} tables`);
   known = info.tables;
   renderTables(known);
   status.textContent = `ready in ${milliseconds(info.ms)}`;
   engine.textContent = `DataFusion ${info.version} · ${megabytes(info.wasmBytes)} of wasm`;
+  boot.ready(
+    `DataFusion ${info.version} is running in this tab · ${megabytes(info.wasmBytes)} of wasm in ` +
+      milliseconds(info.ms),
+  );
   await run();
 }
 
 void main().catch((error: Error) => {
-  delete download.dataset.active;
   status.textContent = "failed to start";
-  const failure = document.createElement("p");
-  failure.className = "error";
-  failure.textContent = error.message;
-  panes.results.replaceChildren(failure);
+  boot.fail(error.message);
 });

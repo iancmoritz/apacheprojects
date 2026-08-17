@@ -1,0 +1,163 @@
+/*!
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+/* The site's design system, then this page's own shape: three columns of panels over one table. */
+@import "../../design/tokens.css";
+@import "../../design/system.css";
+
+.app__main {
+  display: grid;
+  grid-template-columns: minmax(19rem, 22rem) minmax(0, 1fr) minmax(20rem, 26rem);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--gutter);
+  align-items: start;
+}
+
+.app__main > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The boot panel is a column of its own concern: it sits above the first column's panels. */
+.app__main > div > .app__boot {
+  padding: 0;
+}
+
+.panel > pre,
+.panel > div > pre {
+  margin-top: var(--space-2);
+  white-space: pre-wrap;
+  overflow: auto;
+  max-height: 22rem;
+  font-size: var(--step--2);
+}
+
+/* The buttons that drive PyIceberg, one per line so the sentence on each is readable. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.steps code {
+  font-size: var(--step--1);
+}
+
+/* Written into panels by innerHTML: the same small aside as .note elsewhere on the site. */
+.hint {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  color: var(--ink-faint);
+}
+
+.panel textarea {
+  min-height: 7rem;
+}
+
+.panel input[type="text"] {
+  flex: 1;
+  min-width: 8rem;
+}
+
+table.grid {
+  margin-top: var(--space-2);
+}
+
+.scroll {
+  max-height: 20rem;
+}
+
+/* -- the warehouse on disk ------------------------------------------------------------------- */
+
+ul.tree,
+ul.snapshots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+}
+
+ul.tree li {
+  white-space: nowrap;
+}
+
+ul.tree button {
+  border: 0;
+  background: none;
+  padding: 0.05rem 0.15rem;
+  text-align: left;
+  width: 100%;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+ul.tree button:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Each layer of an Iceberg table reads as itself: metadata, manifest list, manifest, data. */
+.kind {
+  display: inline-block;
+  min-width: 6.2rem;
+  color: var(--ink-faint);
+}
+
+.kind.metadata {
+  color: #8a5a00;
+}
+
+.kind.manifest-list {
+  color: #6b3fb0;
+}
+
+.kind.manifest {
+  color: #1f6b3a;
+}
+
+.kind.data {
+  color: var(--brand);
+}
+
+ul.snapshots li {
+  border-left: 2px solid var(--rule-strong);
+  padding: var(--space-1) 0 var(--space-1) var(--space-2);
+}
+
+ul.snapshots li.current {
+  border-left-color: var(--accent);
+}
+
+.badge {
+  font-family: var(--font-heading);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  border: var(--hairline) solid var(--rule-strong);
+  padding: 0 0.35rem;
+}
+
+@media (max-width: 1100px) {
+  .app__main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
