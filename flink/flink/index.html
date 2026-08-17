@@ -1,0 +1,363 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flink in the browser</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        --flink: #e6526f;
+        --flink-dark: #05586d;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: var(--flink-dark);
+        color: #fff;
+      }
+      header h1 {
+        font-size: 1rem;
+        margin: 0;
+        white-space: nowrap;
+      }
+      header a {
+        color: inherit;
+        text-decoration: none;
+        opacity: 0.9;
+        white-space: nowrap;
+      }
+      header a:hover {
+        text-decoration: underline;
+      }
+      header .grow {
+        flex: 1;
+      }
+      header .facts {
+        font-size: 0.8rem;
+        opacity: 0.95;
+        text-align: right;
+        white-space: nowrap;
+      }
+      main {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        flex: 1;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      #boot ol {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+        font-size: 0.9rem;
+      }
+      #boot li[data-state="done"]::marker {
+        content: "\2713  ";
+      }
+      #boot li[data-state="pending"] {
+        opacity: 0.5;
+      }
+      #boot li[data-state="failed"] {
+        color: #c00;
+      }
+      #boot li .ms {
+        opacity: 0.6;
+        font-size: 0.85em;
+      }
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-size: 0.78rem;
+        line-height: 1.35;
+      }
+      #log,
+      #console {
+        max-height: 30vh;
+        overflow: auto;
+        border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+        border-radius: 4px;
+        padding: 0.5rem;
+      }
+      #console {
+        margin-top: 0.5rem;
+        color: color-mix(in srgb, currentColor 65%, transparent);
+      }
+      #console:empty {
+        display: none;
+      }
+      #job[hidden] {
+        display: none;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .row label {
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      .row input[type="number"] {
+        width: 4.5rem;
+      }
+      #words {
+        flex: 1;
+        min-width: 14rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+      }
+      button.go {
+        background: var(--flink);
+        color: #fff;
+        border: 0;
+        border-radius: 4px;
+        padding: 0.4rem 1rem;
+        cursor: pointer;
+      }
+      button.go:disabled {
+        opacity: 0.5;
+        cursor: progress;
+      }
+      button.plain {
+        background: none;
+        color: inherit;
+        border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+        border-radius: 4px;
+        padding: 0.4rem 0.75rem;
+        cursor: pointer;
+      }
+      fieldset {
+        border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        border-radius: 4px;
+        margin: 0;
+        padding: 0.6rem 0.75rem;
+      }
+      legend {
+        font-size: 0.8rem;
+        opacity: 0.75;
+        padding: 0 0.35rem;
+      }
+      .metrics {
+        display: flex;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+      }
+      .metrics div {
+        display: flex;
+        flex-direction: column;
+      }
+      .metrics b {
+        font-size: 1.1rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .metrics span {
+        opacity: 0.7;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.25rem;
+        border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+        flex-wrap: wrap;
+      }
+      .tabs button {
+        border: 0;
+        background: none;
+        color: inherit;
+        padding: 0.4rem 0.75rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+      }
+      .tabs button[aria-selected="true"] {
+        border-bottom-color: var(--flink);
+        font-weight: 600;
+      }
+      .panel[hidden] {
+        display: none;
+      }
+      .panel {
+        overflow: auto;
+        max-height: 55vh;
+      }
+      #panel-dashboard iframe {
+        width: 100%;
+        height: 50vh;
+        border: 1px solid var(--rule);
+        background: #fff;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      th,
+      td {
+        border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        padding: 0.25rem 0.5rem;
+        text-align: left;
+        white-space: nowrap;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      td.state[data-state="RUNNING"] {
+        color: #0a7c2f;
+      }
+      td.state[data-state="FAILED"],
+      td.state[data-state="CANCELED"] {
+        color: #c00;
+      }
+      .bar {
+        height: 0.5rem;
+        border-radius: 2px;
+        background: var(--flink);
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .note {
+        font-size: 0.85rem;
+        opacity: 0.8;
+      }
+      .error {
+        color: #c00;
+      }
+      code {
+        font-size: 0.85em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/">&larr; Projects</a>
+      <h1>Apache Flink &mdash; WebAssembly</h1>
+      <span id="status">starting&hellip;</span>
+      <span class="grow"></span>
+      <span class="facts" id="facts"></span>
+    </header>
+    <main>
+      <section id="boot">
+        <strong>Nothing here runs on a server.</strong> A real Flink 1.20 <code>MiniCluster</code>
+        &mdash; a JobManager with its dispatcher, scheduler and checkpoint coordinator, and a
+        TaskManager with its own slots, memory manager and mailbox threads &mdash; is starting in this
+        tab on a JVM compiled to WebAssembly. The job below is an event-time tumbling window over
+        words you type, with watermarks, keyed state and checkpoints that Flink itself produces.
+        <ol id="steps"></ol>
+        <pre id="log"></pre>
+        <!-- CheerpJ redirects the JVM's stdout and stderr into the element with this id. -->
+        <pre id="console" aria-label="JVM stdout"></pre>
+      </section>
+      <section id="job" hidden>
+        <fieldset>
+          <legend>Job</legend>
+          <div class="row">
+            <label>window <input id="window" type="number" min="1" max="60" value="5" /> s</label>
+            <label>allowed lateness <input id="lateness" type="number" min="0" max="60" value="2" /> s</label>
+            <label>
+              out&#8209;of&#8209;orderness
+              <input id="skewness" type="number" min="0" max="60" value="1" /> s
+            </label>
+            <label>checkpoint every <input id="interval" type="number" min="2" max="120" value="10" /> s</label>
+            <label>
+              parallelism
+              <input id="parallelism" type="number" min="1" max="2" value="1" title="one TaskManager with two slots, on one core" />
+            </label>
+            <button id="submit" class="go" type="button">Submit job</button>
+            <button id="cancel" class="plain" type="button">Cancel</button>
+            <span class="note" id="job-note"></span>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Feed the stream</legend>
+          <div class="row">
+            <input
+              id="words"
+              type="text"
+              spellcheck="false"
+              aria-label="words to send"
+              placeholder="checkpoint watermark checkpoint barrier"
+            />
+            <button id="send" class="go" type="button">Send</button>
+            <label>
+              generator
+              <input id="rate" type="range" min="0" max="200" step="5" value="0" />
+              <span id="rate-value" class="note">off</span>
+            </label>
+            <label>
+              out of order
+              <input id="skew" type="range" min="0" max="50" step="5" value="10" />
+              <span id="skew-value" class="note">10%</span>
+            </label>
+            <button id="checkpoint" class="plain" type="button">Checkpoint now</button>
+          </div>
+        </fieldset>
+        <div class="metrics">
+          <div><b id="m-state">&mdash;</b><span>job state</span></div>
+          <div><b id="m-ingested">0</b><span>events ingested</span></div>
+          <div><b id="m-emitted">0</b><span>window rows emitted</span></div>
+          <div><b id="m-late">0</b><span>late records (side output)</span></div>
+          <div><b id="m-watermark">&mdash;</b><span>watermark</span></div>
+          <div><b id="m-lag">&mdash;</b><span>watermark lag</span></div>
+          <div><b id="m-checkpoints">0</b><span>checkpoints completed</span></div>
+          <div><b id="m-state-size">&mdash;</b><span>last checkpoint state</span></div>
+        </div>
+        <div class="tabs" role="tablist">
+          <button id="tab-windows" type="button" role="tab" aria-selected="true">Window output</button>
+          <button id="tab-graph" type="button" role="tab" aria-selected="false">ExecutionGraph</button>
+          <button id="tab-plan" type="button" role="tab" aria-selected="false">StreamGraph JSON</button>
+          <button id="tab-checkpoints" type="button" role="tab" aria-selected="false">Checkpoints</button>
+          <button id="tab-events" type="button" role="tab" aria-selected="false">Event log</button>
+          <button id="tab-dashboard" type="button" role="tab" aria-selected="false">Web dashboard</button>
+        </div>
+        <div class="panel" id="panel-windows"></div>
+        <div class="panel" id="panel-graph" hidden></div>
+        <div class="panel" id="panel-plan" hidden><pre id="plan"></pre></div>
+        <div class="panel" id="panel-checkpoints" hidden></div>
+        <div class="panel" id="panel-events" hidden><pre id="events"></pre></div>
+        <div class="panel" id="panel-dashboard" hidden>
+          <p class="note" id="dashboard-note">
+            Flink&rsquo;s own web dashboard, served by the JobManager in this tab: a service worker relays
+            every request it makes into the JVM, where the REST endpoint answers over the in&#8209;process
+            loopback.
+          </p>
+        </div>
+      </section>
+    </main>
+    <script src="https://cjrtnc.leaningtech.com/4.2/loader.js"></script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
