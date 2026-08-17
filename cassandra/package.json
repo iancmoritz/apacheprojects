@@ -1,0 +1,19 @@
+{
+  "name": "cassandra-wasm",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A real multi-node Apache Cassandra cluster in the browser, one node per Web Worker",
+  "scripts": {
+    "assets": "node scripts/build-jars.mjs",
+    "dev": "npm run assets && vite",
+    "build": "npm run assets && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
+  }
+}

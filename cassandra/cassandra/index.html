@@ -1,0 +1,232 @@
+<!doctype html>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cassandra cluster in the browser</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+        --line: color-mix(in srgb, currentColor 20%, transparent);
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: #1287a8;
+        color: #fff;
+        flex-wrap: wrap;
+      }
+      header h1 {
+        font-size: 1rem;
+        margin: 0;
+        white-space: nowrap;
+      }
+      header a {
+        color: inherit;
+        white-space: nowrap;
+      }
+      header .grow {
+        flex: 1;
+      }
+      #stage {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        opacity: 0.9;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      main {
+        padding: 1rem;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(20rem, 1fr) minmax(24rem, 2fr);
+        align-items: start;
+      }
+      @media (max-width: 60rem) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+      button,
+      select,
+      textarea {
+        font: inherit;
+      }
+      button {
+        padding: 0.25rem 0.6rem;
+      }
+      section {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.75rem;
+      }
+      section > h2 {
+        font-size: 0.9rem;
+        margin: 0 0 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        opacity: 0.7;
+      }
+      .intro {
+        grid-column: 1 / -1;
+        margin: 0;
+        max-width: 70ch;
+        line-height: 1.5;
+      }
+      .node {
+        border-top: 1px solid var(--line);
+        padding: 0.5rem 0;
+        font-size: 0.85rem;
+      }
+      .node h3 {
+        font: inherit;
+        font-weight: 600;
+        margin: 0 0 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .node dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 0 0.5rem;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+      }
+      .node dt {
+        opacity: 0.6;
+      }
+      .node dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      .node .controls {
+        margin-left: auto;
+        display: flex;
+        gap: 0.25rem;
+      }
+      .pill {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+      }
+      .pill.up {
+        background: #1287a833;
+      }
+      .pill.down {
+        background: #d9534f33;
+      }
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        min-height: 5rem;
+      }
+      .row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+      }
+      table {
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+      }
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 0.15rem 0.4rem;
+        text-align: left;
+      }
+      #log {
+        margin: 0.5rem 0 0;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+        max-height: 22rem;
+        overflow: auto;
+      }
+      .err {
+        color: #d9534f;
+      }
+      .ok {
+        color: #2f8132;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/">&larr; Projects</a>
+      <h1>Apache Cassandra 4.1.12 &mdash; CheerpJ</h1>
+      <span id="stage">idle</span>
+      <span class="grow"></span>
+      <label>nodes <select id="count"></select></label>
+      <button id="start" type="button">Start cluster</button>
+    </header>
+    <main>
+      <p class="intro">
+        <strong>Every node here is real Apache Cassandra, running in this tab.</strong> Each Web
+        Worker holds one CheerpJ JVM running Cassandra 4.1.12, with its own commitlog and SSTables in
+        a virtual filesystem. Cassandra's TCP transport is replaced by
+        <code>postMessage</code>&thinsp;&mdash;&thinsp;the bytes are Cassandra's own serialized
+        internode messages&thinsp;&mdash;&thinsp;so gossip, the token ring, replica selection, digest
+        reads, hints and consistency levels are all Cassandra's own code. A cold start is slow: the
+        seed node replays a real Cassandra startup (a couple of minutes), and the other nodes only
+        join once it is answering gossip.
+      </p>
+      <section id="cluster">
+        <h2>nodetool status</h2>
+        <p id="clusterEmpty">Not started.</p>
+      </section>
+      <section>
+        <h2>CQL</h2>
+        <div class="row">
+          <label>on <select id="target"></select></label>
+          <label>consistency <select id="cl"></select></label>
+          <button id="run" type="button" disabled>Run</button>
+          <button id="demo" type="button" disabled>Run RF=3 demo</button>
+          <button id="clear" type="button">Clear log</button>
+        </div>
+        <textarea id="query" spellcheck="false">SELECT peer, schema_version FROM system.peers;</textarea>
+        <div id="result"></div>
+        <pre id="log"></pre>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
